@@ -3,6 +3,13 @@ return {
 	"folke/which-key.nvim",
 	'nvim-telescope/telescope.nvim',
 	'nvim-lua/plenary.nvim',
+	'tpope/vim-surround',
+	{
+		'numToStr/Comment.nvim',
+		opts = {
+		},
+		lazy = false,
+	},
 	'sbdchd/neoformat',
 	{ "folke/neoconf.nvim", cmd = "Neoconf" },
 	"folke/neodev.nvim",

@@ -26,5 +26,3 @@ keymap.set("x", "p", '"_c<Esc>p')
 -- Move current line up and down
 keymap.set({ "n", "v" }, "<A-j>", ':m+1<CR>==', { desc = "move line up" })
 keymap.set({ "n", "v" }, "<A-k>", ':m-2<CR>==', { desc = "move line up" })
-
-
