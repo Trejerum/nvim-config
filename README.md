@@ -1,153 +1,203 @@
-# 🚀 Neovim Configuration
+# Neovim & Centro de Edición Developer
 
-Configuración personalizada de **Neovim** escrita en **Lua**, modular y gestionada con [lazy.nvim](https://github.com/folke/lazy.nvim). Diseñada para ofrecer un entorno de desarrollo ágil, ligero y reproducible entre diferentes sistemas operativos (Windows, Linux y macOS).
-
----
-
-## 📋 Requisitos Previos
-
-Antes de clonar e iniciar Neovim, asegúrate de contar con las siguientes herramientas instaladas en tu sistema:
-
-| Herramienta | Descripción | Instalación rápida |
-| :--- | :--- | :--- |
-| **Neovim** (>= 0.9.0) | Editor principal | [Descargas oficiales](https://github.com/neovim/neovim/releases) |
-| **Git** | Clonado del repositorio y gestor de plugins | `git --version` |
-| **Ripgrep (`rg`)** | Búsqueda rápida de texto con Telescope | `winget install BurntSushi.ripgrep.MSVC` / `brew install ripgrep` / `sudo apt install ripgrep` |
-| **fd** *(opcional)* | Búsqueda optimizada de archivos | `winget install sharkdp.fd` / `brew install fd` / `sudo apt install fd-find` |
-| **Nerd Font** | Tipografía con iconos para `lualine` | [Nerd Fonts](https://www.nerdfonts.com/) (ej. *JetBrainsMono Nerd Font*) |
-| **Compilador C** *(opcional)* | GCC, Clang o MSVC para parsers de Treesitter | `winget install LLVM.LLVM` / `sudo apt install build-essential` |
+Configuración avanzada de **Neovim** escrita íntegramente en **Lua**, modular y gestionada de forma declarativa con [lazy.nvim](https://github.com/folke/lazy.nvim). Diseñada como un entorno de edición y desarrollo de alto rendimiento, ágil, ligero y reproducible al 100% entre diferentes sistemas operativos (**Windows**, **Linux** y **macOS**).
 
 ---
 
-## 📦 Instalación
+## 🚀 Requisitos y Herramientas del Entorno
 
-El archivo [`init.lua`](init.lua) incluye bootstrapping automático: la primera vez que inicies Neovim, descargará `lazy.nvim` de forma autónoma e instalará los plugins bloqueados en [`lazy-lock.json`](lazy-lock.json).
+La configuración aprovecha aceleradores nativos y herramientas de línea de comandos para maximizar la velocidad de búsqueda, edición e indexación:
+
+| Herramienta | Utilidad en el Entorno |
+| :--- | :--- |
+| **`Neovim` (>= 0.9.0)** | Motor de edición modal moderno con soporte de LuaJIT y Treesitter. |
+| **`Git`** | Clonación del repositorio, sincronización y gestor de plugins mediante `lazy.nvim`. |
+| **`Ripgrep` (`rg`)** | Motor de búsqueda de texto ultrarrápido utilizado por Telescope (`<Leader>tg`, `<Leader>ts`). |
+| **`fd`** *(opcional)* | Búsqueda de archivos indexada a nivel de sistema para agilizar Telescope (`<Leader>tf`). |
+| **`Nerd Font`** | Tipografía parcheada con glifos e iconos (ej. *JetBrainsMono Nerd Font*) para la barra de estado `lualine`. |
+| **`Compilador C`** *(opcional)* | GCC, Clang o MSVC para la compilación nativa de parsers de Treesitter. |
+
+---
+
+## 📦 Instalación y Puesta a Punto (`install.ps1`)
+
+El repositorio incluye un script aprovisionador para Windows ([`install.ps1`](install.ps1)) y compatibilidad nativa con sistemas Unix.
 
 ### 🪟 Windows (PowerShell)
 
 ```powershell
-# 1. (Opcional) Haz una copia de seguridad si ya tienes una configuración previa
-if (Test-Path "$env:LOCALAPPDATA\nvim") {
-    Rename-Item "$env:LOCALAPPDATA\nvim" "$env:LOCALAPPDATA\nvim.backup"
-}
+# 1. Clonar el repositorio en la carpeta estándar de configuración de Neovim
+git clone https://github.com/Trejerum/nvim-config.git "$env:LOCALAPPDATA\nvim"
 
-# 2. Clona el repositorio en AppData\Local\nvim
-git clone https://github.com/Trejerum/nvim-config.git $env:LOCALAPPDATA\nvim
+# 2. Entrar en el directorio y ejecutar el aprovisionador
+cd "$env:LOCALAPPDATA\nvim"
+.\install.ps1
 
-# 3. Abre Neovim para que lazy.nvim instale los plugins
+# 3. Iniciar Neovim
 nvim
 ```
+
+El script [`install.ps1`](install.ps1):
+- Comprueba la versión instalada de Neovim en el sistema.
+- Verifica la disponibilidad de herramientas clave (`git`, `rg`, `fd`, compiladores C) y sugiere su instalación inmediata mediante `winget`.
+- Valida que la ruta de despliegue sea la esperada por Neovim en Windows (`$env:LOCALAPPDATA\nvim`).
+- Ejecuta una sincronización desatendida (*headless*) de los plugins con `lazy.nvim`.
 
 ### 🐧 Linux / 🍎 macOS (Bash / Zsh)
 
 ```bash
-# 1. (Opcional) Copia de seguridad si ya existe configuración previa
+# 1. (Opcional) Copia de seguridad si ya existía una configuración previa
 [ -d "$HOME/.config/nvim" ] && mv "$HOME/.config/nvim" "$HOME/.config/nvim.backup"
 
-# 2. Clona el repositorio en ~/.config/nvim
-git clone https://github.com/Trejerum/nvim-config.git ~/.config/nvim
+# 2. Clonar el repositorio
+git clone https://github.com/Trejerum/nvim-config.git "$HOME/.config/nvim"
 
-# 3. Abre Neovim
+# 3. Iniciar Neovim (lazy.nvim se instalará e inicializará automáticamente)
 nvim
 ```
 
 ---
 
-## 📂 Estructura del Proyecto
+## 📂 Arquitectura Modular (`lua/`)
 
-```text
-nvim/
-├── init.lua                # Punto de entrada: arranque de lazy.nvim y carga de módulos
-├── lazy-lock.json          # Versiones exactas y bloqueadas de los plugins instalados
-├── README.md               # Documentación del proyecto
-└── lua/
-    ├── globals.lua         # Variables globales (ej. vim.g.autoformat)
-    ├── opts.lua            # Opciones de editor (números de línea, indentación, tabs)
-    ├── mappings.lua        # Atajos de teclado personalizados
-    ├── plugins.lua         # Lista y especificación de plugins gestionados por Lazy
-    └── config/             # Configuraciones específicas por plugin
-        ├── debugprint.lua  # Opciones y comandos para debugprint.nvim
-        ├── gitsigns.lua    # Configuración de indicadores Git en el gutter
-        ├── lualine.lua     # Aspecto y secciones de la barra de estado
-        └── nvim_hop.lua    # Configuración de saltos rápidos con Hop
-```
+La configuración está estructurada en módulos independientes y desacoplados para garantizar un arranque rápido, mantenibilidad sencilla y total compatibilidad con Git:
+
+| Archivo / Directorio | Área | Descripción |
+| :--- | :--- | :--- |
+| **[`init.lua`](init.lua)** | **Bootstrap & Entrada** | Bootstrap autónomo de `lazy.nvim`, configuración de teclas líder (`<Space>`) y carga ordenada de módulos. |
+| **[`lazy-lock.json`](lazy-lock.json)** | **Lockfile Determinista** | Registro estricto de hashes y commits de cada plugin para garantizar idéntico comportamiento en cualquier equipo. |
+| **[`lua/opts.lua`](lua/opts.lua)** | **Opciones del Editor** | Parámetros visuales y de indentación: números de línea (`number`), sangría de 4 espacios (`shiftwidth = 4`), tabs inteligentes. |
+| **[`lua/globals.lua`](lua/globals.lua)** | **Variables Globales** | Variables de entorno y ajustes globales de plugins (`vim.g.autoformat = false`). |
+| **[`lua/mappings.lua`](lua/mappings.lua)** | **Atajos de Teclado** | Atajos personalizados para búsquedas con Telescope, explorador NERDTree, gestión de ventanas y manipulación de registros. |
+| **[`lua/plugins.lua`](lua/plugins.lua)** | **Ecosistema de Plugins** | Declaración y especificación de plugins gestionados mediante `lazy.nvim`. |
+| **[`lua/config/lualine.lua`](lua/config/lualine.lua)** | **Barra de Estado** | Tema, iconos y secciones dinámicas de la statusline (rama git, diffs, diagnósticos, modo y progreso). |
+| **[`lua/config/nvim_hop.lua`](lua/config/nvim_hop.lua)** | **Movimiento Preciso** | Resaltado de colores y mapeo de saltos bidireccionales por parejas de caracteres con Hop. |
+| **[`lua/config/gitsigns.lua`](lua/config/gitsigns.lua)** | **Indicadores Git** | Signos de adición/cambio/borrado en el gutter, navegación entre hunks (`]c`/`[c`) e inspección de cambios. |
+| **[`lua/config/debugprint.lua`](lua/config/debugprint.lua)** | **Depuración Rápida** | Atajos y comandos para la inserción instantánea de sentencias de depuración por consola. |
 
 ---
 
-## ⌨️ Atajos de Teclado (Keymaps)
+## 🧭 1. Navegación Ágil y Gestión de Splits
 
-La tecla **Leader** está configurada como `<Space>` (Espacio).
+Control fluido del espacio de trabajo y distribución de ventanas divididas:
 
-### 🔍 Telescope (Buscador Difuso)
+- **Navegación entre splits:**
+  - <kbd>Ctrl + h</kbd>: Mueve el foco a la ventana o split de la **izquierda**.
+  - <kbd>Ctrl + j</kbd>: Mueve el foco a la ventana o split **inferior**.
+  - <kbd>Ctrl + k</kbd>: Mueve el foco a la ventana o split **superior**.
+  - <kbd>Ctrl + l</kbd>: Mueve el foco a la ventana o split de la **derecha**.
+
+- **Redimensionamiento dinámico:**
+  - <kbd>Ctrl + ↑</kbd>: Reduce el alto del split activo (`-10`).
+  - <kbd>Ctrl + ↓</kbd>: Aumenta el alto del split activo (`+10`).
+  - <kbd>Ctrl + ←</kbd>: Reduce el ancho del split activo (`-10`).
+  - <kbd>Ctrl + →</kbd>: Aumenta el ancho del split activo (`+10`).
+
+---
+
+## 🔍 2. Búsqueda Difusa y Exploración (Telescope)
+
+Integración con [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) para la localización instantánea de archivos, buffers y patrones de texto. La tecla **Leader** es <kbd>Espacio</kbd>:
 
 | Atajo | Comando | Descripción |
 | :--- | :--- | :--- |
-| `<Leader>tf` | `:Telescope find_files` | Buscar archivos en el proyecto |
-| `<Leader>tg` | `:Telescope live_grep` | Búsqueda de texto en vivo (requiere `ripgrep`) |
-| `<Leader>tb` | `:Telescope buffers` | Listar y cambiar de buffers abiertos |
-| `<Leader>th` | `:Telescope help_tags` | Buscar en la ayuda de Neovim |
-| `<Leader>ts` | `:Telescope grep_string` | Buscar ocurrencias de la palabra bajo el cursor |
-| `<Leader>tr` | `:Telescope resume` | Reanudar la última búsqueda |
-
-### 🗂️ Explorador de Archivos (NERDTree)
-
-| Atajo | Comando | Descripción |
-| :--- | :--- | :--- |
-| `<Leader><TAB>` | `:NERDTreeToggle` | Abrir / cerrar el árbol lateral |
-| `<Leader>r` | `:NERDTreeFind` | Localizar el archivo actual en el árbol |
-
-### 🪟 Gestión de Ventanas y Splits
-
-| Atajo | Modo | Descripción |
-| :--- | :---: | :--- |
-| `<Ctrl-h>` | Normal | Mover foco al split izquierdo |
-| `<Ctrl-j>` | Normal | Mover foco al split inferior |
-| `<Ctrl-k>` | Normal | Mover foco al split superior |
-| `<Ctrl-l>` | Normal | Mover foco al split derecho |
-| `<Ctrl-Left>` | Normal | Reducir ancho del split (`-10`) |
-| `<Ctrl-Right>` | Normal | Aumentar ancho del split (`+10`) |
-| `<Ctrl-Up>` | Normal | Reducir alto del split (`-10`) |
-| `<Ctrl-Down>` | Normal | Aumentar alto del split (`+10`) |
-
-### 🐇 Movimiento Rápido (Hop)
-
-| Atajo | Modos | Descripción |
-| :--- | :---: | :--- |
-| `f` | Normal, Visual, Operador | Salto rápido bidireccional de 2 caracteres en pantalla |
-
-### ✏️ Edición y Registros
-
-| Atajo | Modo | Descripción |
-| :--- | :---: | :--- |
-| `<Leader>v` | Normal | Reseleccionar el último bloque de texto pegado |
-| `p` | Visual | Pegar sobre selección sin sobreescribir el registro por defecto |
-| `<Alt-j>` | Visual | Mover línea/bloque seleccionado hacia abajo |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>f</kbd> | `:Telescope find_files` | Búsqueda difusa de archivos en todo el árbol del proyecto. |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>g</kbd> | `:Telescope live_grep` | Búsqueda de cadenas de texto en tiempo real con Ripgrep. |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>b</kbd> | `:Telescope buffers` | Listado y conmutación rápida entre buffers abiertos. |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>h</kbd> | `:Telescope help_tags` | Búsqueda en el manual de ayuda integrado de Neovim. |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>s</kbd> | `:Telescope grep_string` | Búsqueda de todas las apariciones de la palabra bajo el cursor. |
+| <kbd>Leader</kbd> + <kbd>t</kbd> <kbd>r</kbd> | `:Telescope resume` | Reanuda la última búsqueda de Telescope con su estado y filtros previos. |
 
 ---
 
-## 🔌 Plugins Instalados
+## 🗂️ 3. Exploración de Archivos (NERDTree)
 
-| Plugin | Propósito |
-| :--- | :--- |
-| [folke/lazy.nvim](https://github.com/folke/lazy.nvim) | Gestor de plugins moderno y rápido |
-| [scrooloose/nerdtree](https://github.com/scrooloose/nerdtree) | Árbol de archivos y navegación |
-| [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) | Buscador difuso modular y potente |
-| [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim) | Utilidades Lua (dependencia de Telescope) |
-| [nvim-lualine/lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Barra de estado rápida y personalizable |
-| [tpope/vim-fugitive](https://github.com/tpope/vim-fugitive) | Integración con Git dentro de Neovim |
-| [folke/which-key.nvim](https://github.com/folke/which-key.nvim) | Popup visual que sugiere combinaciones de teclas |
-| [tpope/vim-surround](https://github.com/tpope/vim-surround) | Modificación rápida de comillas, paréntesis y tags |
-| [numToStr/Comment.nvim](https://github.com/numToStr/Comment.nvim) | Comentarios de código rápidos (`gcc`, `gc`) |
-| [smoka7/hop.nvim](https://github.com/smoka7/hop.nvim) | Navegación precisa estilo EasyMotion |
-| [sbdchd/neoformat](https://github.com/sbdchd/neoformat) | Formateador de código universal |
-| [folke/neoconf.nvim](https://github.com/folke/neoconf.nvim) | Configuración de proyecto local |
-| [andrewferrier/debugprint.nvim](https://github.com/andrewferrier/debugprint.nvim) | Inserción rápida de sentencias de debug print |
+Navegación visual del árbol de directorios del proyecto mediante [nerdtree](https://github.com/scrooloose/nerdtree):
+
+- **<kbd>Leader</kbd> + <kbd>Tab</kbd>**: Abre o cierra el panel lateral de NERDTree (`:NERDTreeToggle`).
+- **<kbd>Leader</kbd> + <kbd>r</kbd>**: Localiza y resalta en el árbol el archivo actualmente abierto en el buffer (`:NERDTreeFind`).
 
 ---
 
-## 🛠️ Comandos Útiles
+## 🐇 4. Movimiento Preciso en Pantalla (Hop)
 
-- `:Lazy` — Abrir la interfaz de gestión de plugins.
-- `:Lazy sync` — Sincronizar e instalar/actualizar plugins según la configuración.
-- `:Lazy check` — Comprobar si hay actualizaciones disponibles.
-- `:checkhealth` — Diagnóstico general del estado de Neovim y dependencias del sistema.
+Saltos directos y sin fricción a cualquier punto de la pantalla mediante [hop.nvim](https://github.com/smoka7/hop.nvim):
+
+- **<kbd>f</kbd>** (Modos Normal, Visual y Operador): Activa el salto bidireccional por pares de caracteres (`hop.hint_char2()`). Pulsa dos caracteres visibles y luego la letra clave asignada por Hop para saltar instantáneamente a esa posición.
+
+---
+
+## 🌿 5. Control de Versiones con Git (Fugitive & Gitsigns)
+
+Herramientas avanzadas integradas para la gestión de Git sin abandonar el editor:
+
+- **[vim-fugitive](https://github.com/tpope/vim-fugitive):** El cliente de Git definitivo dentro de Vim:
+  - `:Git` (o `:G`): Abre el panel de estado interactivo de Git.
+  - `:Gdiffsplit`: Abre una comparación diff lado a lado contra el índice o commit previo.
+  - `:Gblame`: Inspección de autoría línea por línea.
+- **[gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim):** Indicadores en tiempo real en la columna de signos (gutter):
+  - <kbd>]c</kbd> / <kbd>[c</kbd>: Salta al siguiente o anterior bloque de cambios (*hunk*).
+  - `<Leader>hp`: Vista previa flotante del cambio en el hunk actual.
+  - `<Leader>hb`: Git blame detallado de la línea actual.
+
+---
+
+## ✏️ 6. Edición Eficiente y Manipulación de Registros
+
+- **Pegado limpio sin sobreescritura:** En modo visual, al pulsar <kbd>p</kbd> se reemplaza el texto seleccionado sin contaminar el registro predeterminado (`"_c<Esc>p`), permitiendo volver a pegar el contenido original repetidamente.
+- **Reselección del bloque pegado:** <kbd>Leader</kbd> + <kbd>v</kbd> vuelve a seleccionar visualmente el último bloque de texto pegado.
+- **Movimiento de bloques:** En modo visual, <kbd>Alt + j</kbd> desplaza la selección verticalmente hacia abajo.
+- **Comentarios rápidos ([Comment.nvim](https://github.com/numToStr/Comment.nvim)):**
+  - `gcc`: Comenta / descomenta la línea actual.
+  - `gc` (en modo visual): Comenta / descomenta el bloque seleccionado.
+- **Envoltorios de caracteres ([vim-surround](https://github.com/tpope/vim-surround)):**
+  - `cs"'`: Cambia comillas dobles por simples.
+  - `ysiw)`: Envuelve la palabra actual entre paréntesis.
+  - `ds"`: Elimina las comillas circundantes.
+
+---
+
+## 🔌 7. Ecosistema de Plugins (`lazy.nvim`)
+
+El gestor de plugins utilizado es [lazy.nvim](https://github.com/folke/lazy.nvim). Lista de extensiones incluidas:
+
+| Plugin | Propósito | Estado |
+| :--- | :--- | :---: |
+| **`folke/lazy.nvim`** | Gestor de plugins moderno, asíncrono y de carga perezosa (*lazy loading*). | Activo |
+| **`nvim-telescope/telescope.nvim`** | Buscador difuso modular y extensible. | Activo |
+| **`nvim-lua/plenary.nvim`** | Librería de utilidades Lua esencial para plugins modernos. | Activo |
+| **`scrooloose/nerdtree`** | Árbol de archivos lateral y visor de directorios. | Activo |
+| **`nvim-lualine/lualine.nvim`** | Barra de estado rápida y ligera con soporte de iconos. | Activo |
+| **`tpope/vim-fugitive`** | Suite integral de integración con Git. | Activo |
+| **`folke/which-key.nvim`** | Popup interactivo que guía y recuerda atajos de teclado pendientes. | Activo |
+| **`tpope/vim-surround`** | Manipulación ágil de pares circundantes (comillas, etiquetas, paréntesis). | Activo |
+| **`numToStr/Comment.nvim`** | Conmutación potente de comentarios por línea y bloque. | Activo |
+| **`smoka7/hop.nvim`** | Motor de navegación y salto visual preciso en pantalla. | Activo |
+| **`sbdchd/neoformat`** | Formateador universal de código compatible con múltiples lenguajes. | Activo |
+| **`folke/neoconf.nvim`** | Soporte para ajustes de configuración por proyecto local. | Activo |
+| **`andrewferrier/debugprint.nvim`** | Inserción automatizada de sentencias de depuración por pantalla. | Activo |
+| **`echasnovski/mini.nvim`** | Colección de módulos utilitarios para Neovim. | Activo |
+| **`nvim-treesitter/nvim-treesitter`** | Parser de sintaxis avanzado y resaltado de código estructural. | Activo |
+
+---
+
+## 🛠️ 8. Comandos de Mantenimiento y Diagnóstico
+
+Comandos integrados para verificar y actualizar el entorno:
+
+- **`:Lazy`**: Abre la interfaz gráfica interactiva de Lazy para inspeccionar el estado de los plugins, tiempos de carga y dependencias.
+- **`:Lazy sync`**: Sincroniza e instala cualquier plugin nuevo o actualiza los existentes respetando las especificaciones.
+- **`:Lazy update`**: Comprueba y descarga las últimas versiones disponibles.
+- **`:Lazy clean`**: Elimina plugins huérfanos que ya no estén presentes en la configuración.
+- **`:checkhealth`**: Ejecuta la auditoría integral de salud de Neovim comprobando proveedores de portapapeles, Python, Node, parsers y ejecutables del sistema.
+
+---
+
+## ⚠️ Buenas Prácticas y Consejos Multiplataforma
+
+1. **Terminal recomendada:**
+   - En Windows se recomienda encarecidamente utilizar **Windows Terminal** o **WezTerm** configurado con una **Nerd Font** para garantizar el renderizado correcto de todos los iconos y glifos de la barra de estado.
+2. **Codificación de archivos:**
+   - Mantén los archivos de configuración de Neovim (`.lua`) en formato **UTF-8** (sin BOM) con saltos de línea consistentes (`LF` o `CRLF`).
+3. **Reproducibilidad:**
+   - Si añades o eliminas plugins en [lua/plugins.lua](lua/plugins.lua), ejecuta `:Lazy sync` y añade al commit resultante tanto el archivo Lua como el [`lazy-lock.json`](lazy-lock.json) para mantener sincronizados todos tus equipos.

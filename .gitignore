@@ -1,0 +1,15 @@
+# Archivos temporales y de intercambio (Swap & Undo)
+*.swp
+*.swo
+*~
+*.un~
+*.tmp
+
+# Archivos de sesión y estado local
+.netrwhist
+Session.vim
+
+# Archivos específicos de sistemas operativos
+.DS_Store
+Thumbs.db
+desktop.ini
