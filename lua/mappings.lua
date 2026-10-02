@@ -30,3 +30,21 @@ keymap.set("x", "p", '"_c<Esc>p')
 -- keymap.set({ "n", "v" }, "<A-k>", ':m-2<CR>==', { desc = "move line up" })
 
 vim.api.nvim_set_keymap('v', '<A-j>', ":<C-U>execute 'normal! '<Down>m`>-'<CR>", { noremap = true, silent = true })
+
+-- Map ctrl-[hjkl] to move through split
+keymap.set('n', '<c-k>', ':wincmd k<CR>', { noremap = true, silent = true })
+keymap.set('n', '<c-j>', ':wincmd j<CR>', { noremap = true, silent = true })
+keymap.set('n', '<c-h>', ':wincmd h<CR>', { noremap = true, silent = true })
+keymap.set('n', '<c-l>', ':wincmd l<CR>', { noremap = true, silent = true })
+
+-- Expand split to the right
+keymap.set('n', '<C-Right>', ':vertical resize +10<CR>', { noremap = true, silent = true })
+
+-- Expand split downwards 
+keymap.set('n', '<C-Down>', ':resize +10<CR>', { noremap = true, silent = true })
+
+-- Expand split to the left 
+keymap.set('n', '<C-Left>', ':vertical resize -10<CR>', { noremap = true, silent = true })
+
+-- Expand split upwards 
+keymap.set('n', '<C-Up>', ':resize -10<CR>', { noremap = true, silent = true })
