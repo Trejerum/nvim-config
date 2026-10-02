@@ -74,6 +74,7 @@ La configuración está estructurada en módulos independientes y desacoplados p
 | **[`lua/config/nvim_hop.lua`](lua/config/nvim_hop.lua)** | **Movimiento Preciso** | Resaltado de colores y mapeo de saltos bidireccionales por parejas de caracteres con Hop. |
 | **[`lua/config/gitsigns.lua`](lua/config/gitsigns.lua)** | **Indicadores Git** | Signos de adición/cambio/borrado en el gutter, navegación entre hunks (`]c`/`[c`) e inspección de cambios. |
 | **[`lua/config/debugprint.lua`](lua/config/debugprint.lua)** | **Depuración Rápida** | Atajos y comandos para la inserción instantánea de sentencias de depuración por consola. |
+| **[`docs/future-improvements.md`](docs/future-improvements.md)** | **Hoja de Ruta & Backlog** | Registro de mejoras futuras planificadas, ideas y matriz de evaluación de riesgos. |
 
 ---
 
@@ -204,3 +205,10 @@ Comandos integrados para verificar y actualizar el entorno:
    - Mantén los archivos de configuración de Neovim (`.lua`) en formato **UTF-8** (sin BOM) con saltos de línea consistentes (`LF` o `CRLF`).
 3. **Reproducibilidad:**
    - Si añades o eliminas plugins en [lua/plugins.lua](lua/plugins.lua), ejecuta `:Lazy sync` y añade al commit resultante tanto el archivo Lua como el [`lazy-lock.json`](lazy-lock.json) para mantener sincronizados todos tus equipos.
+
+---
+
+## 🗺️ Hoja de Ruta y Próximos Pasos
+
+Consulta el documento **[`docs/future-improvements.md`](docs/future-improvements.md)** para revisar las mejoras planificadas a medio y largo plazo (configuración de Treesitter, sustitución de NERDTree por `oil.nvim`, integración de Lazygit, sinergia con notas y matriz de evaluación de seguridad).
+
