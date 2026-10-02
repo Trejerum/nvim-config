@@ -15,6 +15,10 @@ keymap.set('n', '<Leader>r', '<cmd>NERDTreeFind<cr>')
 -- Disable shift + K
 keymap.set('n', '<S-k>', '')
 
+-- Clear search highlighting with ESC
+keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = "Limpiar resaltado de busqueda", silent = true })
+
+
 -- Reselect the text that has just been pasted, see also https://stackoverflow.com/a/4317090/6064933.
 keymap.set("n", "<leader>v", "printf('`[%s`]', getregtype()[0])", {
   expr = true,

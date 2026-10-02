@@ -144,6 +144,7 @@ Herramientas avanzadas integradas para la gestión de Git sin abandonar el edito
 
 ## ✏️ 6. Edición Eficiente y Manipulación de Registros
 
+- **Limpiar resaltado de búsqueda:** Pulsa <kbd>Esc</kbd> en modo normal para desmarcar el resaltado tras buscar palabras.
 - **Pegado limpio sin sobreescritura:** En modo visual, al pulsar <kbd>p</kbd> se reemplaza el texto seleccionado sin contaminar el registro predeterminado (`"_c<Esc>p`), permitiendo volver a pegar el contenido original repetidamente.
 - **Reselección del bloque pegado:** <kbd>Leader</kbd> + <kbd>v</kbd> vuelve a seleccionar visualmente el último bloque de texto pegado.
 - **Movimiento de bloques:** En modo visual, <kbd>Alt + j</kbd> desplaza la selección verticalmente hacia abajo.
@@ -168,6 +169,8 @@ El gestor de plugins utilizado es [lazy.nvim](https://github.com/folke/lazy.nvim
 | **`nvim-lua/plenary.nvim`** | Librería de utilidades Lua esencial para plugins modernos. | Activo |
 | **`scrooloose/nerdtree`** | Árbol de archivos lateral y visor de directorios. | Activo |
 | **`nvim-lualine/lualine.nvim`** | Barra de estado rápida y ligera con soporte de iconos. | Activo |
+| **`folke/tokyonight.nvim`** | Esquema de colores moderno y limpio para Neovim. | Activo |
+| **`lewis6991/gitsigns.nvim`** | Indicadores de cambios Git en el margen y navegación de hunks. | Activo |
 | **`tpope/vim-fugitive`** | Suite integral de integración con Git. | Activo |
 | **`folke/which-key.nvim`** | Popup interactivo que guía y recuerda atajos de teclado pendientes. | Activo |
 | **`tpope/vim-surround`** | Manipulación ágil de pares circundantes (comillas, etiquetas, paréntesis). | Activo |
