@@ -29,9 +29,12 @@ return {
 	"folke/which-key.nvim",
 
         -- Telescope for file,buffer and grep search
-	'nvim-telescope/telescope.nvim',
+        {
+            'nvim-telescope/telescope.nvim',
+            branch = '0.1.x',
+            dependencies = { 'nvim-lua/plenary.nvim' }
+        },
 
-	'nvim-lua/plenary.nvim',
 
         -- Surround + Comments 
 	'tpope/vim-surround',
