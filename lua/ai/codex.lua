@@ -36,35 +36,108 @@ function M.spawn_terminal(cmd, title)
     vim.cmd("startinsert")
 end
 
+local codex_bin_cache = nil
+
+--- Resuelve la ruta al ejecutable de Codex CLI (codex / codex.exe)
+--- Replica la lógica de Get-CodexExe de PowerShell ($PROFILE)
+--- @return string
+function M.get_codex_bin()
+    if codex_bin_cache then
+        return codex_bin_cache
+    end
+
+    -- 1. Variable de entorno personalizada $CODEX_EXE
+    local env_bin = vim.env.CODEX_EXE
+    if env_bin and vim.fn.filereadable(env_bin) == 1 then
+        codex_bin_cache = env_bin
+        return codex_bin_cache
+    end
+
+    -- 2. Ejecutable ya disponible en PATH
+    if vim.fn.executable("codex") == 1 then
+        codex_bin_cache = "codex"
+        return codex_bin_cache
+    end
+
+    -- 3. Detección automática en extensiones de VS Code (~/.vscode/extensions/openai.chatgpt*)
+    local ext_dir = vim.fn.expand("~/.vscode/extensions")
+    local dirs = vim.fn.glob(ext_dir .. "/openai.chatgpt*", false, true)
+    if #dirs > 0 then
+        table.sort(dirs)
+        for i = #dirs, 1, -1 do
+            local candidate = dirs[i] .. "/bin/windows-x86_64/codex.exe"
+            if vim.fn.filereadable(candidate) == 1 then
+                codex_bin_cache = candidate
+
+                -- Exponer el directorio al PATH de Neovim para submódulos o comandos hijos
+                local bin_dir = vim.fn.fnamemodify(candidate, ":h")
+                if not vim.env.PATH:find(bin_dir, 1, true) then
+                    vim.env.PATH = bin_dir .. ";" .. vim.env.PATH
+                end
+
+                return codex_bin_cache
+            end
+        end
+    end
+
+    -- Fallback por defecto
+    codex_bin_cache = "codex"
+    return codex_bin_cache
+end
+
+--- Construye la línea de comandos de Codex agregando siempre `--no-daemon`
+--- para evitar errores cuando no existe el servidor daemon en segundo plano.
+--- @param subcmd string|nil
+--- @return string
+function M.build_cmd(subcmd)
+    local bin = M.get_codex_bin()
+    if bin:find(" ") then
+        bin = '"' .. bin .. '"'
+    end
+
+    if subcmd and subcmd ~= "" then
+        return string.format("%s --no-daemon %s", bin, subcmd)
+    else
+        return string.format("%s --no-daemon", bin)
+    end
+end
+
 --- Alterna la ventana flotante con la sesión interactiva de Codex
 function M.toggle_chat()
     if state.buf and vim.api.nvim_buf_is_valid(state.buf) then
         ui.toggle_float(state, "Codex CLI (OpenAI)")
     else
-        M.spawn_terminal("codex", "Codex CLI (OpenAI)")
+        M.spawn_terminal(M.build_cmd(), "Codex CLI (OpenAI)")
     end
 end
 
---- Reanuda directamente la última conversación activa (codex resume --last)
+--- Reanuda directamente la última conversación activa (codex --no-daemon resume --last)
 function M.continue_last()
-    M.spawn_terminal("codex resume --last", "Codex CLI (Continuar sesión)")
+    M.spawn_terminal(M.build_cmd("resume --last"), "Codex CLI (Continuar sesión)")
 end
 
 --- Reanuda una conversación específica por su UUID
 --- @param id string
 function M.resume_conversation(id)
-    M.spawn_terminal("codex resume " .. id, "Codex CLI (" .. id:sub(1, 8) .. ")")
+    M.spawn_terminal(M.build_cmd("resume " .. id), "Codex CLI (" .. id:sub(1, 8) .. ")")
 end
 
 --- Ejecuta codex review en la terminal flotante
 function M.review_repo()
-    M.spawn_terminal("codex review", "Codex Review (Git)")
+    M.spawn_terminal(M.build_cmd("review"), "Codex Review (Git)")
 end
 
---- Aplica el último parche de Codex (codex apply)
-function M.apply_patch()
-    local output = vim.fn.system("codex apply")
+--- Aplica el último parche de Codex (codex --no-daemon apply)
+--- @param task_id string|nil
+function M.apply_patch(task_id)
+    local cmd = M.build_cmd(task_id and ("apply " .. task_id) or "apply")
+    local output = vim.fn.system(cmd)
     vim.notify(output, vim.log.levels.INFO, { title = "Codex Apply" })
+end
+
+--- Ejecuta el diagnóstico de Codex en la terminal flotante
+function M.doctor()
+    M.spawn_terminal(M.build_cmd("doctor"), "Codex Doctor (Diagnóstico)")
 end
 
 --- Obtiene la lista de conversaciones históricas desde ~/.codex/session_index.jsonl
@@ -240,8 +313,9 @@ function M.query(instruction, code, title)
     end
 
     local stdout_chunks = {}
+    local bin = M.get_codex_bin()
 
-    local job = vim.fn.jobstart({ "codex", "exec", full_prompt }, {
+    local job = vim.fn.jobstart({ bin, "--no-daemon", "exec", full_prompt }, {
         stdout_buffered = true,
         on_stdout = function(_, data)
             if data then

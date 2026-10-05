@@ -136,7 +136,10 @@ vim.api.nvim_create_user_command("CodexContinue", function() providers.codex.con
 vim.api.nvim_create_user_command("CodexResume", function() providers.codex.continue_last() end, {})
 vim.api.nvim_create_user_command("CodexHistory", function() providers.codex.show_history() end, {})
 vim.api.nvim_create_user_command("CodexReview", function() providers.codex.review_repo() end, {})
-vim.api.nvim_create_user_command("CodexApply", function() providers.codex.apply_patch() end, {})
+vim.api.nvim_create_user_command("CodexDoctor", function() providers.codex.doctor() end, {})
+vim.api.nvim_create_user_command("CodexApply", function(opts)
+    providers.codex.apply_patch(opts.args ~= "" and opts.args or nil)
+end, { nargs = "?" })
 vim.api.nvim_create_user_command("CodexExplain", function(opts)
     local code = extract_code(opts)
     providers.codex.query("Por favor explica el siguiente código de forma clara:", code, "Explicación (Codex)")
@@ -157,7 +160,10 @@ vim.api.nvim_create_user_command("CxContinue", function() vim.cmd("CodexContinue
 vim.api.nvim_create_user_command("CxResume", function() vim.cmd("CodexResume") end, {})
 vim.api.nvim_create_user_command("CxChats", function() vim.cmd("CodexHistory") end, {})
 vim.api.nvim_create_user_command("CxReview", function() vim.cmd("CodexReview") end, {})
-vim.api.nvim_create_user_command("CxApply", function() vim.cmd("CodexApply") end, {})
+vim.api.nvim_create_user_command("CxDoctor", function() vim.cmd("CodexDoctor") end, {})
+vim.api.nvim_create_user_command("CxApply", function(opts)
+    providers.codex.apply_patch(opts.args ~= "" and opts.args or nil)
+end, { nargs = "?" })
 
 -- ==============================================================================
 -- ATAJOS DE TECLADO (KEYMAPS)

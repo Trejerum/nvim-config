@@ -185,10 +185,12 @@ La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>c</kbd> | `:CodexContinue` / `:CxContinue` | Normal, Terminal | Reanuda la última sesión activa de Codex / VS Code (`codex resume --last`). |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>h</kbd> | `:CodexHistory` / `:CxChats` | Normal | Historial de hilos de Codex compartidos con VS Code mediante Telescope y vista previa. |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>r</kbd> | `:CodexReview` / `:CxReview` | Normal, Terminal | Ejecuta la revisión automatizada del repositorio Git con `codex review`. |
-| — | `:CodexApply` / `:CxApply` | Normal | Aplica el último parche de diff generado por Codex con `codex apply`. |
+| — | `:CodexDoctor` / `:CxDoctor` | Normal, Terminal | Ejecuta el diagnóstico de salud, autenticación y sandbox de Codex. |
+| — | `:CodexApply [id]` / `:CxApply [id]` | Normal | Aplica el parche de diff más reciente o por Task ID con `codex apply`. |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>e</kbd> | `:CodexExplain` | Normal, Visual | Explicación técnica de código con el motor de Codex. |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>f</kbd> | `:CodexRefactor` | Normal, Visual | Refactorización de código asistida por Codex con prompt interactivo. |
 
+> **Modo Ephemeral (`--no-daemon`):** Todas las invocaciones de Codex inyectan automáticamente el modificador `--no-daemon` y resuelven dinámicamente el ejecutable empaquetado en VS Code (`~/.vscode/extensions/openai.chatgpt*/bin/`), previniendo el error de paquete local incompleto cuando no se dispone del servicio de background daemon.
 > **Alternar proveedor predeterminado:** Usa `:AiProvider [agy|codex]` para cambiar el motor por defecto de los comandos genéricos (`:AiChat`, `:AiExplain`, etc.).
 > **Aislamiento y desacoplamiento:** En las terminales flotantes, pulsa <kbd>Esc</kbd><kbd>Esc</kbd> o <kbd>q</kbd> para ocultarlas sin matar la sesión. Para desactivar la IA por completo, basta con comentar la línea `require("ai")` en [`init.lua`](init.lua).
 
