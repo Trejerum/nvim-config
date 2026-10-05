@@ -74,6 +74,7 @@ La configuración está estructurada en módulos independientes y desacoplados p
 | **[`lua/config/nvim_hop.lua`](lua/config/nvim_hop.lua)** | **Movimiento Preciso** | Resaltado de colores y mapeo de saltos bidireccionales por parejas de caracteres con Hop. |
 | **[`lua/config/gitsigns.lua`](lua/config/gitsigns.lua)** | **Indicadores Git** | Signos de adición/cambio/borrado en el gutter, navegación entre hunks (`]c`/`[c`) e inspección de cambios. |
 | **[`lua/config/debugprint.lua`](lua/config/debugprint.lua)** | **Depuración Rápida** | Atajos y comandos para la inserción instantánea de sentencias de depuración por consola. |
+| **[`lua/ai/`](lua/ai/)** | **Integración de IA (Opcional)** | Módulo desacoplado para interacción con Antigravity CLI (`agy`) en terminal flotante y análisis de código. |
 | **[`docs/future-improvements.md`](docs/future-improvements.md)** | **Hoja de Ruta & Backlog** | Registro de mejoras futuras planificadas, ideas y matriz de evaluación de riesgos. |
 
 ---
@@ -159,7 +160,22 @@ Herramientas avanzadas integradas para la gestión de Git sin abandonar el edito
 
 ---
 
-## 🔌 7. Ecosistema de Plugins (`lazy.nvim`)
+## 🤖 7. Asistente de IA Integrado (Antigravity `agy`)
+
+La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai/) para interactuar con **Antigravity CLI (`agy`)** sin añadir dependencias externas ni plugins de terceros:
+
+| Atajo | Comando | Modo | Descripción |
+| :--- | :--- | :---: | :--- |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AiChat` / `:AgyChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con la sesión interactiva de `agy`. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>e</kbd> | `:AiExplain` / `:AgyExplain` | Normal, Visual | Envía el buffer o la selección a `agy` para obtener una explicación técnica detallada en un split. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>r</kbd> | `:AiReview` / `:AgyReview` | Normal, Visual | Auditoría de código buscando bugs, seguridad y buenas prácticas. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>f</kbd> | `:AiRefactor` / `:AgyRefactor` | Normal, Visual | Solicita instrucciones interactivas y genera una propuesta de refactorización en un split. |
+
+> **Aislamiento y desacoplamiento:** En la ventana flotante de `agy`, pulsa <kbd>Esc</kbd><kbd>Esc</kbd> o <kbd>q</kbd> para ocultarla sin perder la sesión en curso. Si en el futuro deseas prescindir de la IA o cambiar de proveedor, basta con comentar la línea `require("ai")` en [`init.lua`](init.lua) o eliminar la carpeta `lua/ai/`.
+
+---
+
+## 🔌 8. Ecosistema de Plugins (`lazy.nvim`)
 
 El gestor de plugins utilizado es [lazy.nvim](https://github.com/folke/lazy.nvim). Lista de extensiones incluidas:
 
@@ -185,7 +201,7 @@ El gestor de plugins utilizado es [lazy.nvim](https://github.com/folke/lazy.nvim
 
 ---
 
-## 🛠️ 8. Comandos de Mantenimiento y Diagnóstico
+## 🛠️ 9. Comandos de Mantenimiento y Diagnóstico
 
 Comandos integrados para verificar y actualizar el entorno:
 

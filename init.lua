@@ -19,3 +19,5 @@ require("lazy").setup("plugins")
 require("mappings")
 require("opts")
 require("globals")
+require("ai")
+
