@@ -25,6 +25,22 @@ return {
 
     -- Git functionalities
     "https://tpope.io/vim/fugitive.git",
+    {
+        "kdheepak/lazygit.nvim",
+        cmd = {
+            "LazyGit",
+            "LazyGitConfig",
+            "LazyGitCurrentFile",
+            "LazyGitFilter",
+            "LazyGitFilterCurrentFile",
+        },
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+        },
+        keys = {
+            { "<Leader>gl", "<cmd>LazyGit<cr>", desc = "Git: Abrir Lazygit flotante" },
+        },
+    },
 
     -- Command completion for nvim
     "folke/which-key.nvim",

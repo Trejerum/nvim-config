@@ -12,7 +12,7 @@ Cada propuesta incluye su **propósito**, **impacto en el flujo de trabajo**, **
 | :--- | :--- | :---: | :---: |
 | **Inteligencia** | Treesitter (Resaltado estructural completo) | 🟢 Alta | 🟢 Nulo (Código local) |
 | **Navegación** | Migrar de NERDTree a `oil.nvim` | 🟢 Alta | 🟢 Nulo (Open Source estándar) |
-| **Git** | Integración con Lazygit (`lazygit.nvim`) | 🟡 Media | 🟢 Nulo (Usa binario local `lg`) |
+| **Git** | Integración con Lazygit (`lazygit.nvim`) | ✅ Implementado | 🟢 Nulo (Usa binario local `lg`) |
 | **Notas / Diario** | Sinergia con `Documentos\Notes` y Markdown | 🟢 Alta | 🟢 Nulo (Lua nativo) |
 | **Formateo** | Migrar de `neoformat` a `conform.nvim` | 🟡 Media | 🟢 Nulo |
 | **Inteligencia** | LSP básico (`nvim-lspconfig`) | 🟡 Media | 🟡 Bajo (Configuración) |
@@ -55,11 +55,11 @@ Cada propuesta incluye su **propósito**, **impacto en el flujo de trabajo**, **
 
 ## 3. 🌿 Integración con Lazygit (`lazygit.nvim`)
 
-- [ ] **Apertura de Lazygit en ventana flotante**
+- [x] **Apertura de Lazygit en ventana flotante**
   - **Plugin:** [`kdheepak/lazygit.nvim`](https://github.com/kdheepak/lazygit.nvim)
-  - **Atajo propuesto:** `<Leader>gg`
-  - **Beneficio:** En tu perfil de PowerShell utilizas activamente `lazygit` (`lg`). Con este plugin puedes invocarlo dentro de Neovim en una ventana emergente flotante, hacer commits, stashes, ramas o push y, al salir con `q`, volver inmediatamente al archivo que estabas editando.
-  - **Riesgo:** **Nulo**. Utiliza el ejecutable local de `lazygit` que ya tienes instalado en el sistema.
+  - **Atajo:** `<Leader>gl` (y comando `:Lg` / `:LazyGit`)
+  - **Beneficio:** En tu perfil de PowerShell utilizas activamente `lazygit` (`lg`). Con esta integración se invoca dentro de Neovim en una ventana emergente flotante, permitiendo gestionar ramas, commits, stashes o push con interfaz gráfica de terminal y, al salir con `q`, Neovim sincroniza automáticamente el estado de los buffers editados.
+  - **Riesgo:** **Nulo**. Utiliza el ejecutable local de `lazygit` instalado en Scoop (`C:\Users\diego.corral\scoop\shims\lazygit.exe`).
 
 ---
 

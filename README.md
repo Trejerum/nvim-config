@@ -129,18 +129,40 @@ Saltos directos y sin fricción a cualquier punto de la pantalla mediante [hop.n
 
 ---
 
-## 🌿 5. Control de Versiones con Git (Fugitive & Gitsigns)
+## 🌿 5. Control de Versiones con Git
 
-Herramientas avanzadas integradas para la gestión de Git sin abandonar el editor:
+Herramientas ágiles y no sobrecargadas para controlar cambios, revisar ramas y auditar código directamente desde el editor:
 
-- **[vim-fugitive](https://github.com/tpope/vim-fugitive):** El cliente de Git definitivo dentro de Vim:
-  - `:Git` (o `:G`): Abre el panel de estado interactivo de Git.
-  - `:Gdiffsplit`: Abre una comparación diff lado a lado contra el índice o commit previo.
-  - `:Gblame`: Inspección de autoría línea por línea.
-- **[gitsigns.nvim](https://github.com/lewis6991/gitsigns.nvim):** Indicadores en tiempo real en la columna de signos (gutter):
-  - <kbd>]c</kbd> / <kbd>[c</kbd>: Salta al siguiente o anterior bloque de cambios (*hunk*).
-  - `<Leader>hp`: Vista previa flotante del cambio en el hunk actual.
-  - `<Leader>hb`: Git blame detallado de la línea actual.
+### 🚀 Operaciones Globales y Navegación Git (`<Leader>g...`)
+
+| Atajo | Comando | Modo | Descripción |
+| :--- | :--- | :---: | :--- |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>l</kbd> | `:LazyGit` / `:Lg` | Normal | Abre **Lazygit** en una ventana flotante centrada; sincroniza los buffers al salir con `q`. |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>s</kbd> | `:Telescope git_status` | Normal | Lista difusa interactiva de archivos modificados con vista previa de diff en vivo. |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>c</kbd> | `:Telescope git_commits` | Normal | Historial de commits con autor, fecha, buscador difuso y diff detallado. |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>b</kbd> | `:Telescope git_branches` | Normal | Listado de ramas; pulsa <kbd>Enter</kbd> para cambiar de rama o gestionarlas. |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>g</kbd> | `:Git` | Normal | Panel de staging interactivo de **Fugitive** (pulsa `-` para stage/unstage, `cc` para commit). |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>d</kbd> | `:Gdiffsplit` | Normal | Comparación lado a lado (*side-by-side diff*) del archivo activo contra el índice. |
+| <kbd>Leader</kbd> + <kbd>g</kbd> <kbd>p</kbd> | `:Git push` | Normal | Envía los commits locales a la rama remota configurada. |
+
+### 🔍 Gestión Quirúrgica de Cambios y Hunks (`<Leader>h...` - `gitsigns`)
+
+Sin interfaces externas: todas las operaciones ocurren directamente en el archivo en edición:
+
+| Atajo | Modo | Acción |
+| :--- | :---: | :--- |
+| <kbd>]c</kbd> / <kbd>[c</kbd> | Normal | Salta al **siguiente** / **anterior** bloque de cambios (*hunk*). |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>s</kbd> | Normal / Visual | **Stage hunk**: Añade al commit únicamente el bloque bajo el cursor (o la selección en visual). |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>r</kbd> | Normal / Visual | **Reset hunk**: Descarta/revierte quirúrgicamente solo ese bloque de cambios (o selección). |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>u</kbd> | Normal | **Undo stage**: Deshace el último *staging* realizado sobre un hunk. |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>S</kbd> | Normal | Añade todos los cambios del archivo completo al *staging* (`git add %`). |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>R</kbd> | Normal | Descarta todos los cambios del archivo completo restaurando la versión de Git. |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>p</kbd> | Normal | Muestra una ventana emergente flotante con el diff del bloque sin mover el cursor. |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>b</kbd> | Normal | Muestra un popup flotante con el *blame* detallado (autor, commit, fecha y mensaje). |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>l</kbd> | Normal | **Toggle Blame Inline**: Alterna texto tenue virtual al final de la línea actual. |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>d</kbd> | Normal | Abre un split nativo de dos paneles (`vimdiff`) comparando el archivo contra el índice. |
+| <kbd>Leader</kbd> + <kbd>h</kbd> <kbd>D</kbd> | Normal | Abre un split nativo comparando contra el commit anterior (`HEAD~1`). |
+| <kbd>i</kbd><kbd>h</kbd> (*text object*) | Operador / Visual | Objeto de texto para manipular hunks (`dih` para borrarlo, `yih` para copiarlo, `vih` para seleccionarlo). |
 
 ---
 
@@ -210,6 +232,7 @@ El gestor de plugins utilizado es [lazy.nvim](https://github.com/folke/lazy.nvim
 | **`folke/tokyonight.nvim`** | Esquema de colores moderno y limpio para Neovim. | Activo |
 | **`lewis6991/gitsigns.nvim`** | Indicadores de cambios Git en el margen y navegación de hunks. | Activo |
 | **`tpope/vim-fugitive`** | Suite integral de integración con Git. | Activo |
+| **`kdheepak/lazygit.nvim`** | Integración de Lazygit en ventana flotante con sincronización de buffers. | Activo |
 | **`folke/which-key.nvim`** | Popup interactivo que guía y recuerda atajos de teclado pendientes. | Activo |
 | **`tpope/vim-surround`** | Manipulación ágil de pares circundantes (comillas, etiquetas, paréntesis). | Activo |
 | **`numToStr/Comment.nvim`** | Conmutación potente de comentarios por línea y bloque. | Activo |

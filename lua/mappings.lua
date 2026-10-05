@@ -8,6 +8,18 @@ keymap.set('n', '<Leader>th', '<cmd>Telescope help_tags<cr>')
 keymap.set('n', '<Leader>ts', '<cmd>Telescope grep_string<cr>')
 keymap.set('n', '<Leader>tr', '<cmd>Telescope resume<cr>')
 
+-- GIT MAPPINGS (Telescope Git, Fugitive & Lazygit)
+keymap.set('n', '<Leader>gs', '<cmd>Telescope git_status<cr>', { desc = "Git: Archivos modificados (Telescope)" })
+keymap.set('n', '<Leader>gc', '<cmd>Telescope git_commits<cr>', { desc = "Git: Historial de commits (Telescope)" })
+keymap.set('n', '<Leader>gb', '<cmd>Telescope git_branches<cr>', { desc = "Git: Explorar y cambiar ramas (Telescope)" })
+keymap.set('n', '<Leader>gg', '<cmd>Git<cr>', { desc = "Git: Panel interactivo Fugitive (:Git)" })
+keymap.set('n', '<Leader>gd', '<cmd>Gdiffsplit<cr>', { desc = "Git: Diff en split Fugitive" })
+keymap.set('n', '<Leader>gp', '<cmd>Git push<cr>', { desc = "Git: Push al repositorio remoto" })
+keymap.set('n', '<Leader>gl', '<cmd>LazyGit<cr>', { desc = "Git: Abrir Lazygit flotante" })
+
+-- Alias tipo PowerShell (lg -> LazyGit)
+vim.api.nvim_create_user_command("Lg", function() vim.cmd("LazyGit") end, { desc = "Alias tipo PowerShell para LazyGit" })
+
 -- NERDTree mappings
 keymap.set('n', '<Leader><TAB>', '<cmd>NERDTreeToggle<cr>')
 keymap.set('n', '<Leader>r', '<cmd>NERDTreeFind<cr>')
