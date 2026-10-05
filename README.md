@@ -166,7 +166,9 @@ La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai
 
 | Atajo | Comando | Modo | Descripción |
 | :--- | :--- | :---: | :--- |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AiChat` / `:AgyChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con la sesión interactiva de `agy`. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AiChat` / `:AgyChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con una sesión interactiva de `agy`. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>c</kbd> | `:AiContinue` / `:AgyContinue` | Normal, Terminal | Reanuda directamente la última conversación activa (`agy -c`). |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>h</kbd> | `:AiHistory` / `:AgyHistory` | Normal | Historial de conversaciones con buscador difuso en Telescope y vista previa del transcript. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>e</kbd> | `:AiExplain` / `:AgyExplain` | Normal, Visual | Envía el buffer o la selección a `agy` para obtener una explicación técnica detallada en un split. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>r</kbd> | `:AiReview` / `:AgyReview` | Normal, Visual | Auditoría de código buscando bugs, seguridad y buenas prácticas. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>f</kbd> | `:AiRefactor` / `:AgyRefactor` | Normal, Visual | Solicita instrucciones interactivas y genera una propuesta de refactorización en un split. |

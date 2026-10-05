@@ -1,29 +1,16 @@
 local M = {}
 
---- Crea o alterna una ventana flotante centrada
---- @param state table { win = number|nil, buf = number|nil }
+--- Abre una ventana flotante centrada para un buffer específico
+--- @param buf number
 --- @param title string
---- @param on_create function(buf: number, win: number)
-function M.toggle_float(state, title, on_create)
-    -- Si la ventana ya está abierta y es válida, la cerramos (ocultamos)
-    if state.win and vim.api.nvim_win_is_valid(state.win) then
-        vim.api.nvim_win_close(state.win, true)
-        state.win = nil
-        return
-    end
-
+--- @return number win
+function M.open_float_win(buf, title)
     local width = math.floor(vim.o.columns * 0.85)
     local height = math.floor(vim.o.lines * 0.85)
     local col = math.floor((vim.o.columns - width) / 2)
     local row = math.floor((vim.o.lines - height) / 2)
 
-    local is_new_buf = false
-    if not (state.buf and vim.api.nvim_buf_is_valid(state.buf)) then
-        state.buf = vim.api.nvim_create_buf(false, true)
-        is_new_buf = true
-    end
-
-    state.win = vim.api.nvim_open_win(state.buf, true, {
+    local win = vim.api.nvim_open_win(buf, true, {
         relative = "editor",
         width = width,
         height = height,
@@ -34,8 +21,30 @@ function M.toggle_float(state, title, on_create)
         title = " " .. title .. " ",
         title_pos = "center",
     })
+    return win
+end
 
-    if is_new_buf and on_create then
+--- Crea o alterna una ventana flotante centrada asociada a un estado persistente
+--- @param state table { win = number|nil, buf = number|nil }
+--- @param title string
+--- @param on_create function(buf: number, win: number)|nil
+function M.toggle_float(state, title, on_create)
+    -- Si la ventana ya está abierta y es válida, la cerramos (ocultamos)
+    if state.win and vim.api.nvim_win_is_valid(state.win) then
+        vim.api.nvim_win_close(state.win, true)
+        state.win = nil
+        return
+    end
+
+    local is_new = false
+    if not (state.buf and vim.api.nvim_buf_is_valid(state.buf)) then
+        state.buf = vim.api.nvim_create_buf(false, true)
+        is_new = true
+    end
+
+    state.win = M.open_float_win(state.buf, title)
+
+    if is_new and on_create then
         on_create(state.buf, state.win)
     else
         vim.cmd("startinsert")
