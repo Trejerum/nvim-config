@@ -160,20 +160,37 @@ Herramientas avanzadas integradas para la gestión de Git sin abandonar el edito
 
 ---
 
-## 🤖 7. Asistente de IA Integrado (Antigravity `agy`)
+## 🤖 7. Asistentes de IA Integrados (Antigravity `agy` & OpenAI `codex`)
 
-La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai/) para interactuar con **Antigravity CLI (`agy`)** sin añadir dependencias externas ni plugins de terceros:
+La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai/) con soporte nativo para dos proveedores CLI sin añadir dependencias externas ni plugins de terceros:
+* **Antigravity CLI (`agy`)**: Accesible con los comandos y atajos de prefijo `<Leader>a...`.
+* **OpenAI Codex CLI (`codex`)**: Sincronizado con tus hilos de VS Code y accesible con el prefijo `<Leader>c...`.
+
+### 🌌 Antigravity CLI (`<Leader>a...`)
 
 | Atajo | Comando | Modo | Descripción |
 | :--- | :--- | :---: | :--- |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AiChat` / `:AgyChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con una sesión interactiva de `agy`. |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>c</kbd> | `:AiContinue` / `:AgyContinue` | Normal, Terminal | Reanuda directamente la última conversación activa (`agy -c`). |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>h</kbd> | `:AiHistory` / `:AgyHistory` | Normal | Historial de conversaciones con buscador difuso en Telescope y vista previa del transcript. |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>e</kbd> | `:AiExplain` / `:AgyExplain` | Normal, Visual | Envía el buffer o la selección a `agy` para obtener una explicación técnica detallada en un split. |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>r</kbd> | `:AiReview` / `:AgyReview` | Normal, Visual | Auditoría de código buscando bugs, seguridad y buenas prácticas. |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>f</kbd> | `:AiRefactor` / `:AgyRefactor` | Normal, Visual | Solicita instrucciones interactivas y genera una propuesta de refactorización en un split. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AgyChat` / `:AiChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con una sesión interactiva de `agy`. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>c</kbd> | `:AgyContinue` / `:AiContinue` | Normal, Terminal | Reanuda directamente la última conversación activa (`agy -c`). |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>h</kbd> | `:AgyHistory` / `:AiHistory` | Normal | Historial de conversaciones con buscador difuso en Telescope y vista previa del transcript. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>e</kbd> | `:AgyExplain` / `:AiExplain` | Normal, Visual | Envía el buffer o la selección a `agy` para obtener una explicación técnica detallada en un split. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>r</kbd> | `:AgyReview` / `:AiReview` | Normal, Visual | Auditoría de código buscando bugs, seguridad y buenas prácticas. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>f</kbd> | `:AgyRefactor` / `:AiRefactor` | Normal, Visual | Solicita instrucciones interactivas y genera una propuesta de refactorización en un split. |
 
-> **Aislamiento y desacoplamiento:** En la ventana flotante de `agy`, pulsa <kbd>Esc</kbd><kbd>Esc</kbd> o <kbd>q</kbd> para ocultarla sin perder la sesión en curso. Si en el futuro deseas prescindir de la IA o cambiar de proveedor, basta con comentar la línea `require("ai")` en [`init.lua`](init.lua) o eliminar la carpeta `lua/ai/`.
+### ⚡ OpenAI Codex CLI (`<Leader>c...`)
+
+| Atajo | Comando | Modo | Descripción |
+| :--- | :--- | :---: | :--- |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>g</kbd> | `:CodexChat` / `:CxChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con la sesión interactiva de `codex`. |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>c</kbd> | `:CodexContinue` / `:CxContinue` | Normal, Terminal | Reanuda la última sesión activa de Codex / VS Code (`codex resume --last`). |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>h</kbd> | `:CodexHistory` / `:CxChats` | Normal | Historial de hilos de Codex compartidos con VS Code mediante Telescope y vista previa. |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>r</kbd> | `:CodexReview` / `:CxReview` | Normal, Terminal | Ejecuta la revisión automatizada del repositorio Git con `codex review`. |
+| — | `:CodexApply` / `:CxApply` | Normal | Aplica el último parche de diff generado por Codex con `codex apply`. |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>e</kbd> | `:CodexExplain` | Normal, Visual | Explicación técnica de código con el motor de Codex. |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>f</kbd> | `:CodexRefactor` | Normal, Visual | Refactorización de código asistida por Codex con prompt interactivo. |
+
+> **Alternar proveedor predeterminado:** Usa `:AiProvider [agy|codex]` para cambiar el motor por defecto de los comandos genéricos (`:AiChat`, `:AiExplain`, etc.).
+> **Aislamiento y desacoplamiento:** En las terminales flotantes, pulsa <kbd>Esc</kbd><kbd>Esc</kbd> o <kbd>q</kbd> para ocultarlas sin matar la sesión. Para desactivar la IA por completo, basta con comentar la línea `require("ai")` en [`init.lua`](init.lua).
 
 ---
 
