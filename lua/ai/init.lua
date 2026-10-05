@@ -106,6 +106,7 @@ end, { range = "%", desc = "Refactorizar código con el proveedor activo" })
 -- ==============================================================================
 -- COMANDOS Y ATAJOS ESPECÍFICOS DE ANTIGRAVITY (AGY)
 -- ==============================================================================
+vim.api.nvim_create_user_command("Agy", function() vim.cmd("AgyChat") end, {})
 vim.api.nvim_create_user_command("AgyChat", function() providers.agy.toggle_chat() end, {})
 vim.api.nvim_create_user_command("AgyContinue", function() providers.agy.continue_last() end, {})
 vim.api.nvim_create_user_command("AgyResume", function() providers.agy.continue_last() end, {})
@@ -150,6 +151,7 @@ vim.api.nvim_create_user_command("CodexRefactor", function(opts)
 end, { range = "%" })
 
 -- Alias tipo PowerShell (cx...)
+vim.api.nvim_create_user_command("Cx", function() vim.cmd("CodexChat") end, {})
 vim.api.nvim_create_user_command("CxChat", function() vim.cmd("CodexChat") end, {})
 vim.api.nvim_create_user_command("CxContinue", function() vim.cmd("CodexContinue") end, {})
 vim.api.nvim_create_user_command("CxResume", function() vim.cmd("CodexResume") end, {})
@@ -173,7 +175,8 @@ keymap.set("v", "<Leader>ar", ":AgyReview<CR>", { desc = "AGY: Revisar selecció
 keymap.set("n", "<Leader>af", "<cmd>AgyRefactor<CR>", { desc = "AGY: Refactorizar archivo completo", silent = true })
 keymap.set("v", "<Leader>af", ":AgyRefactor<CR>", { desc = "AGY: Refactorizar selección", silent = true })
 
--- 2. Atajos de OpenAI Codex (<Leader>c...)
+-- 2. Atajos de OpenAI Codex (<Leader>c... / <Leader>cx...)
+keymap.set({ "n", "t" }, "<Leader>cx", function() providers.codex.toggle_chat() end, { desc = "Codex: Alternar terminal flotante (cx)", silent = true })
 keymap.set({ "n", "t" }, "<Leader>cg", function() providers.codex.toggle_chat() end, { desc = "Codex: Alternar terminal flotante", silent = true })
 keymap.set({ "n", "t" }, "<Leader>cc", function() providers.codex.continue_last() end, { desc = "Codex: Continuar última sesión (--last)", silent = true })
 keymap.set("n", "<Leader>ch", function() providers.codex.show_history() end, { desc = "Codex: Historial con Telescope (VS Code / CLI)", silent = true })

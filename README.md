@@ -170,18 +170,18 @@ La configuración incluye un módulo completamente aislado en [`lua/ai/`](lua/ai
 
 | Atajo | Comando | Modo | Descripción |
 | :--- | :--- | :---: | :--- |
-| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:AgyChat` / `:AiChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con una sesión interactiva de `agy`. |
+| <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>g</kbd> | `:Agy` / `:AgyChat` / `:AiChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con una sesión interactiva de `agy`. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>c</kbd> | `:AgyContinue` / `:AiContinue` | Normal, Terminal | Reanuda directamente la última conversación activa (`agy -c`). |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>h</kbd> | `:AgyHistory` / `:AiHistory` | Normal | Historial de conversaciones con buscador difuso en Telescope y vista previa del transcript. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>e</kbd> | `:AgyExplain` / `:AiExplain` | Normal, Visual | Envía el buffer o la selección a `agy` para obtener una explicación técnica detallada en un split. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>r</kbd> | `:AgyReview` / `:AiReview` | Normal, Visual | Auditoría de código buscando bugs, seguridad y buenas prácticas. |
 | <kbd>Leader</kbd> + <kbd>a</kbd> <kbd>f</kbd> | `:AgyRefactor` / `:AiRefactor` | Normal, Visual | Solicita instrucciones interactivas y genera una propuesta de refactorización en un split. |
 
-### ⚡ OpenAI Codex CLI (`<Leader>c...`)
+### ⚡ OpenAI Codex CLI (`<Leader>c...` / `<Leader>cx...`)
 
 | Atajo | Comando | Modo | Descripción |
 | :--- | :--- | :---: | :--- |
-| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>g</kbd> | `:CodexChat` / `:CxChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con la sesión interactiva de `codex`. |
+| <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>x</kbd> (o <kbd>c</kbd><kbd>g</kbd>) | `:Cx` / `:CodexChat` / `:CxChat` | Normal, Terminal | Abre o alterna la terminal flotante centrada con la sesión interactiva de `codex`. |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>c</kbd> | `:CodexContinue` / `:CxContinue` | Normal, Terminal | Reanuda la última sesión activa de Codex / VS Code (`codex resume --last`). |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>h</kbd> | `:CodexHistory` / `:CxChats` | Normal | Historial de hilos de Codex compartidos con VS Code mediante Telescope y vista previa. |
 | <kbd>Leader</kbd> + <kbd>c</kbd> <kbd>r</kbd> | `:CodexReview` / `:CxReview` | Normal, Terminal | Ejecuta la revisión automatizada del repositorio Git con `codex review`. |
