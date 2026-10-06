@@ -1,4 +1,4 @@
-﻿# Neovim & Centro de Edición Developer
+# Neovim & Centro de Edición Developer
 
 Configuración avanzada de **Neovim** escrita íntegramente en **Lua**, modular y gestionada de forma declarativa con [lazy.nvim](https://github.com/folke/lazy.nvim). Diseñada como un entorno de edición y desarrollo de alto rendimiento, ágil, ligero y reproducible al 100% entre diferentes sistemas operativos (**Windows**, **Linux** y **macOS**).
 
@@ -13,9 +13,8 @@ La configuración aprovecha aceleradores nativos y herramientas de línea de com
 | **`Neovim` (>= 0.9.0)** | Motor de edición modal moderno con soporte de LuaJIT y Treesitter. |
 | **`Git`** | Clonación del repositorio, sincronización y gestor de plugins mediante `lazy.nvim`. |
 | **`Ripgrep` (`rg`)** | Motor de búsqueda de texto ultrarrápido utilizado por Telescope (`<Leader>tg`, `<Leader>ts`). |
-| **`fd`** *(opcional)* | Búsqueda de archivos indexada a nivel de sistema para agilizar Telescope (`<Leader>tf`). |
-| **`Nerd Font`** | Tipografía parcheada con glifos e iconos (ej. *JetBrainsMono Nerd Font*) para la barra de estado `lualine`. |
-| **`Compilador C`** *(opcional)* | GCC, Clang o MSVC para la compilación nativa de parsers de Treesitter. |
+| **`fd`** | Búsqueda de archivos indexada a nivel de sistema para agilizar Telescope (`<Leader>tf`). |
+| **`Compilador C` (`gcc`)** | Compilación nativa de parsers de Treesitter (C#, TypeScript, SQL, HTML). |
 
 ---
 
@@ -259,8 +258,8 @@ Comandos integrados para verificar y actualizar el entorno:
 
 ## ⚠️ Buenas Prácticas y Consejos Multiplataforma
 
-1. **Terminal recomendada:**
-   - En Windows se recomienda encarecidamente utilizar **Windows Terminal** o **WezTerm** configurado con una **Nerd Font** para garantizar el renderizado correcto de todos los iconos y glifos de la barra de estado.
+1. **Tipografía estándar (Consolas / monospace):**
+   - Configurada para máxima compatibilidad con fuentes limpias estándar como **Consolas** en Windows Terminal, sin requerir fuentes parchadas (*Nerd Fonts*) gracias a `icons_enabled = false` en `lualine`.
 2. **Codificación de archivos:**
    - Mantén los archivos de configuración de Neovim (`.lua`) en formato **UTF-8** (sin BOM) con saltos de línea consistentes (`LF` o `CRLF`).
 3. **Reproducibilidad:**
