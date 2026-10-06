@@ -14,6 +14,23 @@ keymap.set('n', '<Leader>nn', function() require('config.projects').open_daily_n
 vim.api.nvim_create_user_command("Projects", function() require('config.projects').find_projects() end, { desc = "Selector de proyectos en Telescope" })
 vim.api.nvim_create_user_command("DailyNote", function() require('config.projects').open_daily_note() end, { desc = "Abrir nota de trabajo diaria" })
 
+-- SQL SERVER TOOLKIT (Sinergia con módulo 30-sql y motor ADO.NET)
+keymap.set({ 'n', 'v' }, '<Leader>qq', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
+keymap.set({ 'n', 'v' }, '<Leader>qe', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
+keymap.set({ 'n', 'v' }, '<Leader>qg', function() require('config.sql').execute_sql("-Grid") end, { desc = "SQL: Ejecutar en ventana interactiva Out-GridView" })
+keymap.set({ 'n', 'v' }, '<Leader>qc', function() require('config.sql').execute_sql("-Clip") end, { desc = "SQL: Ejecutar y copiar al portapapeles (TSV)" })
+
+vim.api.nvim_create_user_command("SqlRun", function() require('config.sql').execute_sql() end, { desc = "Ejecutar consulta SQL activa en split" })
+vim.api.nvim_create_user_command("SqlGrid", function() require('config.sql').execute_sql("-Grid") end, { desc = "Ejecutar SQL con Out-GridView" })
+vim.api.nvim_create_user_command("SqlClip", function() require('config.sql').execute_sql("-Clip") end, { desc = "Ejecutar SQL y copiar al portapapeles" })
+vim.api.nvim_create_user_command("Q", function(opts)
+  if opts.args and opts.args ~= "" then
+    require('config.sql').execute_sql_string(opts.args)
+  else
+    require('config.sql').execute_sql()
+  end
+end, { nargs = "*", desc = "Ejecutar consulta SQL en split inferior" })
+
 -- GIT MAPPINGS (Telescope Git, Fugitive & Lazygit)
 keymap.set('n', '<Leader>gs', '<cmd>Telescope git_status<cr>', { desc = "Git: Archivos modificados (Telescope)" })
 keymap.set('n', '<Leader>gc', '<cmd>Telescope git_commits<cr>', { desc = "Git: Historial de commits (Telescope)" })
