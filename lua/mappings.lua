@@ -8,6 +8,12 @@ keymap.set('n', '<Leader>th', '<cmd>Telescope help_tags<cr>')
 keymap.set('n', '<Leader>ts', '<cmd>Telescope grep_string<cr>')
 keymap.set('n', '<Leader>tr', '<cmd>Telescope resume<cr>')
 
+-- PROYECTOS & NOTAS (Sinergia con Documentos\Proyectos y Notes)
+keymap.set('n', '<Leader>pp', function() require('config.projects').find_projects() end, { desc = "Proyectos: Selector y cambio de directorio" })
+keymap.set('n', '<Leader>nn', function() require('config.projects').open_daily_note() end, { desc = "Notas: Abrir nota diaria de trabajo" })
+vim.api.nvim_create_user_command("Projects", function() require('config.projects').find_projects() end, { desc = "Selector de proyectos en Telescope" })
+vim.api.nvim_create_user_command("DailyNote", function() require('config.projects').open_daily_note() end, { desc = "Abrir nota de trabajo diaria" })
+
 -- GIT MAPPINGS (Telescope Git, Fugitive & Lazygit)
 keymap.set('n', '<Leader>gs', '<cmd>Telescope git_status<cr>', { desc = "Git: Archivos modificados (Telescope)" })
 keymap.set('n', '<Leader>gc', '<cmd>Telescope git_commits<cr>', { desc = "Git: Historial de commits (Telescope)" })
