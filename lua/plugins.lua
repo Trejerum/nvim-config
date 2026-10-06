@@ -1,30 +1,62 @@
 return {
     -- Arbol de directorios
-    "https://github.com/scrooloose/nerdtree",
+    {
+        "scrooloose/nerdtree",
+        cmd = { "NERDTree", "NERDTreeToggle", "NERDTreeFind", "NERDTreeCWD" },
+        keys = {
+            { "<Leader><TAB>", "<cmd>NERDTreeToggle<cr>", desc = "Toggle árbol de directorios" },
+            { "<Leader>r", "<cmd>NERDTreeFind<cr>", desc = "Ubicar archivo en árbol" },
+        },
+    },
+
+    -- Resaltado y análisis de sintaxis AST
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",
+        cmd = { "TSInstall", "TSInstallSync", "TSUpdate", "TSUpdateSync", "TSUninstall", "TSModuleInfo" },
+        event = { "BufReadPost", "BufNewFile" },
+        config = function()
+            require("config.treesitter").setup()
+        end,
+    },
 
     -- Debug print statements
     {
         "andrewferrier/debugprint.nvim",
+        cmd = { "ToggleCommentDebugPrints", "DeleteDebugPrints" },
+        keys = {
+            { "g?p", desc = "debugprint: variable abajo" },
+            { "g?P", desc = "debugprint: variable arriba" },
+        },
         config = function()
             require("debugprint").setup(require("config.debugprint"))
         end,
         dependencies = {
-            "echasnovski/mini.nvim", -- Needed to enable :ToggleCommentDebugPrints for NeoVim <= 0.9
-            "nvim-treesitter/nvim-treesitter" -- Needed to enable treesitter for NeoVim 0.8
+            "echasnovski/mini.nvim",
+            "nvim-treesitter/nvim-treesitter",
         },
-        version = "*"
+        version = "*",
     },
 
     -- Barra de informacion
     {
         'nvim-lualine/lualine.nvim',
+        event = "VeryLazy",
         config = function()
             require("config.lualine")
         end,
     },
 
     -- Git functionalities
-    "https://tpope.io/vim/fugitive.git",
+    {
+        "tpope/vim-fugitive",
+        cmd = { "Git", "G", "Gdiffsplit", "Gvdiffsplit", "Gread", "Gwrite", "Ggrep", "GMove", "GDelete" },
+        keys = {
+            { "<Leader>gg", "<cmd>Git<cr>", desc = "Git: Fugitive" },
+            { "<Leader>gd", "<cmd>Gdiffsplit<cr>", desc = "Git: Diff en split" },
+            { "<Leader>gp", "<cmd>Git push<cr>", desc = "Git: Push al remoto" },
+        },
+    },
     {
         "kdheepak/lazygit.nvim",
         cmd = {
@@ -43,7 +75,10 @@ return {
     },
 
     -- Command completion for nvim
-    "folke/which-key.nvim",
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+    },
 
     -- Telescope for file, buffer and grep search
     {
@@ -68,16 +103,21 @@ return {
     },
 
     -- Surround + Comments 
-    'tpope/vim-surround',
     {
-        -- :help comment-nvim
+        'tpope/vim-surround',
+        event = "VeryLazy",
+    },
+    {
         'numToStr/Comment.nvim',
+        event = { "BufReadPost", "BufNewFile" },
         opts = {},
-        lazy = false,
     },
 
     -- Formatter
-    'sbdchd/neoformat',
+    {
+        'sbdchd/neoformat',
+        cmd = "Neoformat",
+    },
 
     { "folke/neoconf.nvim", cmd = "Neoconf" },
 
@@ -104,6 +144,7 @@ return {
     {
         "lewis6991/gitsigns.nvim",
         tag = "release",
+        event = { "BufReadPre", "BufNewFile" },
         config = function()
             require("config.gitsigns")
         end,
