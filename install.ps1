@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # INSTALADOR Y APROVISIONAMIENTO DE LA CONFIGURACION DE NEOVIM
 # ==============================================================================
 # Ejecuta este script en un equipo nuevo tras clonar el repositorio:
@@ -73,18 +73,27 @@ elseif ($missingTools.Count -gt 0 -and $InstallMissing) {
     winget install $($missingTools -join ' ') --accept-source-agreements --accept-package-agreements
 }
 
-# 3. Verificacion de ubicacion del repositorio
+# 3. Verificacion de ubicacion del repositorio y vinculacion NTFS
 $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $targetDir = Join-Path $env:LOCALAPPDATA "nvim"
 
 Write-Host "`n[*] Verificando ubicacion de la configuracion..." -ForegroundColor Cyan
-if ((Resolve-Path -LiteralPath $scriptDir).Path -ieq (Resolve-Path -LiteralPath $targetDir -ErrorAction SilentlyContinue).Path) {
-    Write-Host "[+] La configuracion esta ubicada correctamente en: $targetDir" -ForegroundColor Green
+$resolvedScript = (Resolve-Path -LiteralPath $scriptDir).Path
+$resolvedTarget = (Resolve-Path -LiteralPath $targetDir -ErrorAction SilentlyContinue).Path
+
+if ($resolvedTarget -and $resolvedScript -ieq $resolvedTarget) {
+    Write-Host "[+] La configuracion esta vinculada correctamente con: $targetDir" -ForegroundColor Green
 }
 else {
-    Write-Host "[!] Nota: Este repositorio se encuentra en: $scriptDir" -ForegroundColor Yellow
-    Write-Host "    Para que Neovim lo cargue en Windows, asegurate de que este en: $targetDir" -ForegroundColor DarkGray
-    Write-Host "    (Puedes crear un enlace simbolico o mover la carpeta si es necesario)." -ForegroundColor DarkGray
+    if (-not (Test-Path -LiteralPath $targetDir)) {
+        Write-Host "[*] Vinculando repositorio a '$targetDir' mediante Union NTFS (mklink /J)..." -ForegroundColor Cyan
+        cmd /c mklink /J "$targetDir" "$scriptDir" | Out-Null
+        Write-Host "[+] Union NTFS creada con exito: $targetDir -> $scriptDir" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[!] Nota: Este repositorio se encuentra en: $scriptDir" -ForegroundColor Yellow
+        Write-Host "    $targetDir ya existe pero no apunta a esta carpeta." -ForegroundColor DarkGray
+    }
 }
 
 # 4. Sincronizacion inicial de plugins

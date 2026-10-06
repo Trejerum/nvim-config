@@ -1,4 +1,4 @@
-# Neovim & Centro de Edición Developer
+﻿# Neovim & Centro de Edición Developer
 
 Configuración avanzada de **Neovim** escrita íntegramente en **Lua**, modular y gestionada de forma declarativa con [lazy.nvim](https://github.com/folke/lazy.nvim). Diseñada como un entorno de edición y desarrollo de alto rendimiento, ágil, ligero y reproducible al 100% entre diferentes sistemas operativos (**Windows**, **Linux** y **macOS**).
 
@@ -26,11 +26,11 @@ El repositorio incluye un script aprovisionador para Windows ([`install.ps1`](in
 ### 🪟 Windows (PowerShell)
 
 ```powershell
-# 1. Clonar el repositorio en la carpeta estándar de configuración de Neovim
-git clone https://github.com/Trejerum/nvim-config.git "$env:LOCALAPPDATA\nvim"
+# 1. Clonar el repositorio en la ruta estándar de dotfiles
+git clone https://github.com/Trejerum/nvim-config.git "$HOME\.dotfiles\nvim"
 
-# 2. Entrar en el directorio y ejecutar el aprovisionador
-cd "$env:LOCALAPPDATA\nvim"
+# 2. Entrar en el directorio y ejecutar el aprovisionador (crea la unión NTFS automáticamente)
+cd "$HOME\.dotfiles\nvim"
 .\install.ps1
 
 # 3. Iniciar Neovim
