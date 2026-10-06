@@ -49,7 +49,22 @@ return {
     {
         'nvim-telescope/telescope.nvim',
         branch = '0.1.x',
-        dependencies = { 'nvim-lua/plenary.nvim' }
+        cmd = "Telescope",
+        keys = {
+            { "<Leader>tf", "<cmd>Telescope find_files<cr>", desc = "Buscar archivos (fd)" },
+            { "<Leader>tg", "<cmd>Telescope live_grep<cr>", desc = "Buscar texto en vivo (rg)" },
+            { "<Leader>tb", "<cmd>Telescope buffers<cr>", desc = "Buffers abiertos" },
+            { "<Leader>th", "<cmd>Telescope help_tags<cr>", desc = "Ayuda de Neovim" },
+            { "<Leader>ts", "<cmd>Telescope grep_string<cr>", desc = "Buscar palabra actual (rg)" },
+            { "<Leader>tr", "<cmd>Telescope resume<cr>", desc = "Reanudar última búsqueda" },
+            { "<Leader>gs", "<cmd>Telescope git_status<cr>", desc = "Git: Archivos modificados" },
+            { "<Leader>gc", "<cmd>Telescope git_commits<cr>", desc = "Git: Historial de commits" },
+            { "<Leader>gb", "<cmd>Telescope git_branches<cr>", desc = "Git: Ramas" },
+        },
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        config = function()
+            require("config.telescope").setup()
+        end,
     },
 
     -- Surround + Comments 
