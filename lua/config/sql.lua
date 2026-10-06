@@ -78,7 +78,8 @@ function M.execute_sql(flags, query_str)
     vim.notify("Ejecutando SQL contra base de datos...", vim.log.levels.INFO)
   end
 
-  local cmd = string.format("powershell.exe -Command \"q %s -QueryOrPath '%s'\"", flags, temp_file)
+  local shell = vim.fn.executable("pwsh") == 1 and "pwsh.exe" or "powershell.exe"
+  local cmd = string.format("%s -Command \"q %s -QueryOrPath '%s'\"", shell, flags, temp_file)
   local stdout_data = {}
 
   vim.fn.jobstart(cmd, {
