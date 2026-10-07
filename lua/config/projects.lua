@@ -84,4 +84,37 @@ function M.open_daily_note()
   vim.cmd("edit " .. vim.fn.fnameescape(note_path))
 end
 
+local function toggle_line(line)
+  if line:match("%[%s%]") then
+    local res = line:gsub("%[%s%]", "[x]", 1)
+    return res
+  elseif line:match("%[[xX]%]") then
+    local res = line:gsub("%[[xX]%]", "[ ]", 1)
+    return res
+  elseif line:match("^%s*[-*+]%s+") then
+    local res = line:gsub("^(%s*[-*+]%s+)", "%1[ ] ", 1)
+    return res
+  elseif line:match("%S") then
+    return "- [ ] " .. line
+  end
+  return line
+end
+
+function M.toggle_markdown_task()
+  local line = vim.api.nvim_get_current_line()
+  local new_line = toggle_line(line)
+  if new_line ~= line then
+    vim.api.nvim_set_current_line(new_line)
+  end
+end
+
+function M.toggle_markdown_task_range(start_line, end_line)
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
+  local new_lines = {}
+  for _, line in ipairs(lines) do
+    new_lines[#new_lines + 1] = toggle_line(line)
+  end
+  vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, new_lines)
+end
+
 return M
