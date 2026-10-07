@@ -24,14 +24,26 @@ vim.api.nvim_create_user_command("ToggleTask", function() require('config.projec
 
 -- SQL SERVER TOOLKIT (Sinergia con módulo 30-sql y motor ADO.NET)
 -- Soporta prefijo numérico [count]<Leader>qq (ej. 300<Leader>qq para timeout de 300s)
-local function run_sql_with_count(flags)
+local function run_sql_with_count(flags, only_paragraph)
   local c = vim.v.count
   local timeout = c > 0 and c or nil
-  require('config.sql').execute_sql(flags or "", nil, timeout)
+  require('config.sql').execute_sql(flags or "", nil, timeout, only_paragraph)
 end
 
-keymap.set({ 'n', 'v' }, '<Leader>qq', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta ([count]=timeout s)" })
-keymap.set({ 'n', 'v' }, '<Leader>qe', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta ([count]=timeout s)" })
+-- Ejecución estándar de consulta
+keymap.set({ 'n', 'v' }, '<Leader>qq', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta completa ([count]=timeout s)" })
+keymap.set({ 'n', 'v' }, '<Leader>qe', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta completa ([count]=timeout s)" })
+
+-- Ejecutar únicamente el bloque/párrafo continuo bajo el cursor
+keymap.set('n', '<Leader>qb', function() run_sql_with_count("", true) end, { desc = "SQL: Ejecutar solo el bloque/párrafo bajo el cursor" })
+
+-- Modo Dry-Run seguro (ejecuta con BEGIN TRAN ... ROLLBACK y reporta filas afectadas)
+keymap.set({ 'n', 'v' }, '<Leader>qd', function() run_sql_with_count("-Rollback") end, { desc = "SQL: Dry-Run seguro (Rollback automático)" })
+
+-- Selector interactivo de entornos SQL Server (qenv / Telescope)
+keymap.set('n', '<Leader>qp', function() require('config.sql').select_sql_profile() end, { desc = "SQL: Selector de entorno/conexión (qenv)" })
+
+-- Utilidades de ejecución
 keymap.set({ 'n', 'v' }, '<Leader>qo', function() require('config.sql').execute_sql_prompt_timeout() end, { desc = "SQL: Ejecutar pidiendo timeout por teclado" })
 keymap.set('n', '<Leader>qt', function() require('config.sql').toggle_results() end, { desc = "SQL: Alternar/reabrir split de resultados" })
 keymap.set({ 'n', 'v' }, '<Leader>qg', function() run_sql_with_count("-Grid") end, { desc = "SQL: Ejecutar en ventana interactiva Out-GridView" })
@@ -51,6 +63,9 @@ vim.api.nvim_create_user_command("SqlRun", function(opts)
   flags = args
   require('config.sql').execute_sql(flags, nil, timeout)
 end, { nargs = "*", desc = "Ejecutar consulta SQL activa en split (acepta timeout/flags)" })
+vim.api.nvim_create_user_command("SqlBlock", function() run_sql_with_count("", true) end, { desc = "Ejecutar solo el bloque/párrafo SQL bajo el cursor" })
+vim.api.nvim_create_user_command("SqlDryRun", function() run_sql_with_count("-Rollback") end, { desc = "Ejecutar SQL en modo seguro Dry-Run (Rollback)" })
+vim.api.nvim_create_user_command("SqlEnv", function() require('config.sql').select_sql_profile() end, { desc = "Selector interactivo de entornos SQL (Telescope)" })
 vim.api.nvim_create_user_command("SqlToggle", function() require('config.sql').toggle_results() end, { desc = "Alternar/reabrir panel de resultados SQL" })
 vim.api.nvim_create_user_command("SqlGrid", function() require('config.sql').execute_sql("-Grid") end, { desc = "Ejecutar SQL con Out-GridView" })
 vim.api.nvim_create_user_command("SqlClip", function() require('config.sql').execute_sql("-Clip") end, { desc = "Ejecutar SQL y copiar al portapapeles" })
