@@ -95,3 +95,8 @@ keymap.set('n', '<C-Left>', ':vertical resize -10<CR>', { noremap = true, silent
 
 -- Expand split upwards 
 keymap.set('n', '<C-Up>', ':resize -10<CR>', { noremap = true, silent = true })
+
+-- AYUDA & CENTRO DE MANDO (:Nhelp / <Leader>?)
+keymap.set('n', '<Leader>?', function() require('config.help').toggle_help() end, { desc = "Ayuda: Cheatsheet y centro de mando de Neovim" })
+vim.api.nvim_create_user_command("Nhelp", function() require('config.help').toggle_help() end, { desc = "Centro de mando y cheatsheet de Neovim" })
+vim.api.nvim_create_user_command("HelpKeymaps", function() require('config.help').toggle_help() end, { desc = "Cheatsheet de atajos de Neovim" })

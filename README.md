@@ -73,8 +73,19 @@ La configuración está estructurada en módulos independientes y desacoplados p
 | **[`lua/config/nvim_hop.lua`](lua/config/nvim_hop.lua)** | **Movimiento Preciso** | Resaltado de colores y mapeo de saltos bidireccionales por parejas de caracteres con Hop. |
 | **[`lua/config/gitsigns.lua`](lua/config/gitsigns.lua)** | **Indicadores Git** | Signos de adición/cambio/borrado en el gutter, navegación entre hunks (`]c`/`[c`) e inspección de cambios. |
 | **[`lua/config/debugprint.lua`](lua/config/debugprint.lua)** | **Depuración Rápida** | Atajos y comandos para la inserción instantánea de sentencias de depuración por consola. |
+| **[`lua/config/help.lua`](lua/config/help.lua)** | **Centro de Mando & Ayuda** | Ventana flotante interactiva con cheatsheet de todos los atajos de teclado (`<Leader>?` o `:Nhelp`). |
 | **[`lua/ai/`](lua/ai/)** | **Integración de IA (Opcional)** | Módulo desacoplado para interacción con Antigravity CLI (`agy`) en terminal flotante y análisis de código. |
 | **[`docs/future-improvements.md`](docs/future-improvements.md)** | **Hoja de Ruta & Backlog** | Registro de mejoras futuras planificadas, ideas y matriz de evaluación de riesgos. |
+
+---
+
+## ⚡ Centro de Mando y Ayuda Rápida (`:Nhelp` / `<Leader>?`)
+
+Al igual que dispones de `phelp` en tu perfil de PowerShell, en Neovim cuentas con un centro de mando flotante instantáneo que resume todos los atajos de teclado y comandos del entorno organizados por categorías:
+
+| Atajo | Comando | Descripción |
+| :--- | :--- | :--- |
+| <kbd>Leader</kbd> + <kbd>?</kbd> | `:Nhelp` / `:HelpKeymaps` | Abre una ventana flotante centrada con el cheatsheet de atajos (Proyectos, Notas, SQL, Git, Telescope, Splits). Pulsa <kbd>q</kbd> o <kbd>Esc</kbd> para cerrar. |
 
 ---
 

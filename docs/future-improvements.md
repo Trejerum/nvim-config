@@ -14,6 +14,7 @@ Cada propuesta incluye su **propósito**, **impacto en el flujo de trabajo**, **
 | **Navegación** | Migrar de NERDTree a `oil.nvim` | ❌ Descartado | 🟢 Nulo (Preferencia: barra lateral NERDTree) |
 | **Git** | Integración con Lazygit (`lazygit.nvim`) | ✅ Implementado | 🟢 Nulo (Usa binario local `lg`) |
 | **Notas / Diario** | Sinergia con `Documentos\Notes` y Proyectos | ✅ Implementado | 🟢 Nulo (Lua nativo) |
+| **Ayuda / Cheatsheet** | Centro de mando flotante (`:Nhelp` / `<Leader>?`) | ✅ Implementado | 🟢 Nulo (Lua nativo) |
 | **Formateo** | Migrar de `neoformat` a `conform.nvim` | 🟡 Media | 🟢 Nulo |
 | **Inteligencia** | LSP básico (`nvim-lspconfig`) | 🟡 Media | 🟡 Bajo (Configuración) |
 | **Inteligencia** | Gestor de binarios `mason.nvim` | ⚪ Opcional | 🔴 Medio (Descargas binarias externas) |
