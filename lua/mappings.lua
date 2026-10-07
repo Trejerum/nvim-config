@@ -25,12 +25,16 @@ vim.api.nvim_create_user_command("ToggleTask", function() require('config.projec
 -- SQL SERVER TOOLKIT (Sinergia con módulo 30-sql y motor ADO.NET)
 keymap.set({ 'n', 'v' }, '<Leader>qq', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
 keymap.set({ 'n', 'v' }, '<Leader>qe', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
+keymap.set('n', '<Leader>qt', function() require('config.sql').toggle_results() end, { desc = "SQL: Alternar/reabrir split de resultados" })
 keymap.set({ 'n', 'v' }, '<Leader>qg', function() require('config.sql').execute_sql("-Grid") end, { desc = "SQL: Ejecutar en ventana interactiva Out-GridView" })
 keymap.set({ 'n', 'v' }, '<Leader>qc', function() require('config.sql').execute_sql("-Clip") end, { desc = "SQL: Ejecutar y copiar al portapapeles (TSV)" })
+keymap.set('n', '<Leader>qx', function() require('config.sql').cancel_running_query() end, { desc = "SQL: Cancelar consulta en ejecución" })
 
 vim.api.nvim_create_user_command("SqlRun", function() require('config.sql').execute_sql() end, { desc = "Ejecutar consulta SQL activa en split" })
+vim.api.nvim_create_user_command("SqlToggle", function() require('config.sql').toggle_results() end, { desc = "Alternar/reabrir panel de resultados SQL" })
 vim.api.nvim_create_user_command("SqlGrid", function() require('config.sql').execute_sql("-Grid") end, { desc = "Ejecutar SQL con Out-GridView" })
 vim.api.nvim_create_user_command("SqlClip", function() require('config.sql').execute_sql("-Clip") end, { desc = "Ejecutar SQL y copiar al portapapeles" })
+vim.api.nvim_create_user_command("SqlCancel", function() require('config.sql').cancel_running_query() end, { desc = "Cancelar consulta SQL en ejecución" })
 vim.api.nvim_create_user_command("Q", function(opts)
   if opts.args and opts.args ~= "" then
     require('config.sql').execute_sql_string(opts.args)

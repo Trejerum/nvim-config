@@ -24,6 +24,8 @@ function M.toggle_help()
     "",
     "## 🗄️ SQL Server Toolkit (ADO.NET)",
     "  <Leader>qq / <Leader>qe   Ejecutar consulta activa en split inferior (pwsh)",
+    "  <Leader>qt          Alternar/reabrir split con resultados de última consulta",
+    "  <Leader>qx          Cancelar consulta SQL en curso (:SqlCancel)",
     "  <Leader>qg          Ejecutar consulta con vista interactiva Out-GridView",
     "  <Leader>qc          Ejecutar consulta y copiar resultados al portapapeles",
     "  :Q <consulta>       Ejecutar consulta arbitraria en split inferior",
