@@ -136,12 +136,20 @@ function M.cancel_running_query()
   end
 end
 
-function M.execute_sql(flags, query_str)
+function M.execute_sql(flags, query_str, timeout_seconds)
   flags = flags or ""
   local sql = query_str or get_sql_content()
   if not sql or sql:match("^%s*$") then
     vim.notify("No hay consulta SQL seleccionada o el buffer está vacío.", vim.log.levels.WARN)
     return
+  end
+
+  local timeout_flag = ""
+  local timeout_desc = ""
+  if timeout_seconds and tonumber(timeout_seconds) then
+    local t = tonumber(timeout_seconds)
+    timeout_flag = string.format(" -Timeout %d", t)
+    timeout_desc = string.format(" (Timeout: %ds)", t)
   end
 
   local is_special = flags:match("-Grid") or flags:match("-Clip")
@@ -164,7 +172,7 @@ function M.execute_sql(flags, query_str)
     res_buf, res_win = get_or_create_results_window()
     vim.bo[res_buf].modifiable = true
     vim.api.nvim_buf_set_lines(res_buf, 0, -1, false, {
-      "--- [SQL Runner] Ejecutando consulta contra SQL Server... ---",
+      string.format("--- [SQL Runner] Ejecutando consulta contra SQL Server%s... ---", timeout_desc),
       "Tip: Pulsa <C-c> para cancelar o 'q' / <Esc> para cerrar este panel.",
       ""
     })
@@ -172,11 +180,11 @@ function M.execute_sql(flags, query_str)
     -- Mover el cursor a la ventana de resultados para que 'q' o '<C-c>' respondan al instante
     vim.api.nvim_set_current_win(res_win)
   else
-    vim.notify("Ejecutando SQL contra base de datos...", vim.log.levels.INFO)
+    vim.notify(string.format("Ejecutando SQL contra base de datos%s...", timeout_desc), vim.log.levels.INFO)
   end
 
   local shell = vim.fn.executable("pwsh") == 1 and "pwsh.exe" or "powershell.exe"
-  local cmd = string.format("%s -Command \"[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; q %s -QueryOrPath '%s'\"", shell, flags, temp_file)
+  local cmd = string.format("%s -Command \"[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; q %s%s -QueryOrPath '%s'\"", shell, flags, timeout_flag, temp_file)
   local stdout_data = {}
 
   local function append_streaming_lines(lines_to_add)
@@ -264,8 +272,24 @@ function M.execute_sql(flags, query_str)
   })
 end
 
-function M.execute_sql_string(query_str, flags)
-  M.execute_sql(flags or "", query_str)
+function M.execute_sql_string(query_str, flags, timeout_seconds)
+  M.execute_sql(flags or "", query_str, timeout_seconds)
+end
+
+function M.execute_sql_prompt_timeout(flags)
+  vim.ui.input({
+    prompt = "Timeout SQL en segundos (ej. 30, 300, 0 para sin límite): ",
+    default = "120",
+  }, function(input)
+    if input and input ~= "" then
+      local t = tonumber(input)
+      if t then
+        M.execute_sql(flags or "", nil, t)
+      else
+        vim.notify("Timeout inválido: debe ser un número entero.", vim.log.levels.ERROR)
+      end
+    end
+  end)
 end
 
 return M

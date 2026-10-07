@@ -23,14 +23,34 @@ vim.api.nvim_create_user_command("DailyNote", function() require('config.project
 vim.api.nvim_create_user_command("ToggleTask", function() require('config.projects').toggle_markdown_task() end, { desc = "Alternar casilla de tarea Markdown" })
 
 -- SQL SERVER TOOLKIT (Sinergia con módulo 30-sql y motor ADO.NET)
-keymap.set({ 'n', 'v' }, '<Leader>qq', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
-keymap.set({ 'n', 'v' }, '<Leader>qe', function() require('config.sql').execute_sql() end, { desc = "SQL: Ejecutar consulta en split inferior" })
+-- Soporta prefijo numérico [count]<Leader>qq (ej. 300<Leader>qq para timeout de 300s)
+local function run_sql_with_count(flags)
+  local c = vim.v.count
+  local timeout = c > 0 and c or nil
+  require('config.sql').execute_sql(flags or "", nil, timeout)
+end
+
+keymap.set({ 'n', 'v' }, '<Leader>qq', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta ([count]=timeout s)" })
+keymap.set({ 'n', 'v' }, '<Leader>qe', function() run_sql_with_count("") end, { desc = "SQL: Ejecutar consulta ([count]=timeout s)" })
+keymap.set({ 'n', 'v' }, '<Leader>qo', function() require('config.sql').execute_sql_prompt_timeout() end, { desc = "SQL: Ejecutar pidiendo timeout por teclado" })
 keymap.set('n', '<Leader>qt', function() require('config.sql').toggle_results() end, { desc = "SQL: Alternar/reabrir split de resultados" })
-keymap.set({ 'n', 'v' }, '<Leader>qg', function() require('config.sql').execute_sql("-Grid") end, { desc = "SQL: Ejecutar en ventana interactiva Out-GridView" })
-keymap.set({ 'n', 'v' }, '<Leader>qc', function() require('config.sql').execute_sql("-Clip") end, { desc = "SQL: Ejecutar y copiar al portapapeles (TSV)" })
+keymap.set({ 'n', 'v' }, '<Leader>qg', function() run_sql_with_count("-Grid") end, { desc = "SQL: Ejecutar en ventana interactiva Out-GridView" })
+keymap.set({ 'n', 'v' }, '<Leader>qc', function() run_sql_with_count("-Clip") end, { desc = "SQL: Ejecutar y copiar al portapapeles (TSV)" })
 keymap.set('n', '<Leader>qx', function() require('config.sql').cancel_running_query() end, { desc = "SQL: Cancelar consulta en ejecución" })
 
-vim.api.nvim_create_user_command("SqlRun", function() require('config.sql').execute_sql() end, { desc = "Ejecutar consulta SQL activa en split" })
+vim.api.nvim_create_user_command("SqlRun", function(opts)
+  local args = opts.args or ""
+  local timeout = nil
+  local flags = ""
+  -- Extraer timeout si viene como número directo o con flag -Timeout
+  local num = args:match("%-Timeout%s+(%d+)") or args:match("^(%d+)$")
+  if num then
+    timeout = tonumber(num)
+    args = args:gsub("%-Timeout%s+%d+", ""):gsub("^%d+$", ""):gsub("^%s*(.-)%s*$", "%1")
+  end
+  flags = args
+  require('config.sql').execute_sql(flags, nil, timeout)
+end, { nargs = "*", desc = "Ejecutar consulta SQL activa en split (acepta timeout/flags)" })
 vim.api.nvim_create_user_command("SqlToggle", function() require('config.sql').toggle_results() end, { desc = "Alternar/reabrir panel de resultados SQL" })
 vim.api.nvim_create_user_command("SqlGrid", function() require('config.sql').execute_sql("-Grid") end, { desc = "Ejecutar SQL con Out-GridView" })
 vim.api.nvim_create_user_command("SqlClip", function() require('config.sql').execute_sql("-Clip") end, { desc = "Ejecutar SQL y copiar al portapapeles" })
@@ -39,7 +59,7 @@ vim.api.nvim_create_user_command("Q", function(opts)
   if opts.args and opts.args ~= "" then
     require('config.sql').execute_sql_string(opts.args)
   else
-    require('config.sql').execute_sql()
+    run_sql_with_count("")
   end
 end, { nargs = "*", desc = "Ejecutar consulta SQL en split inferior" })
 
