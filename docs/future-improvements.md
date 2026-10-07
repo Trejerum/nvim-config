@@ -8,12 +8,12 @@ Cada propuesta incluye su **propósito**, **impacto en el flujo de trabajo**, **
 
 ## 📊 Matriz de Evaluación Rápida
 
-| Área | Propuesta | Prioridad | Nivel de Riesgo |
+| Área | Propuesta | Estado | Nivel de Riesgo |
 | :--- | :--- | :---: | :---: |
-| **Inteligencia** | Treesitter (Resaltado estructural completo) | 🟢 Alta | 🟢 Nulo (Código local) |
-| **Navegación** | Migrar de NERDTree a `oil.nvim` | 🟢 Alta | 🟢 Nulo (Open Source estándar) |
+| **Inteligencia** | Treesitter (Resaltado estructural AST completo) | ✅ Implementado | 🟢 Nulo (Código local) |
+| **Navegación** | Migrar de NERDTree a `oil.nvim` | ❌ Descartado | 🟢 Nulo (Preferencia: barra lateral NERDTree) |
 | **Git** | Integración con Lazygit (`lazygit.nvim`) | ✅ Implementado | 🟢 Nulo (Usa binario local `lg`) |
-| **Notas / Diario** | Sinergia con `Documentos\Notes` y Markdown | 🟢 Alta | 🟢 Nulo (Lua nativo) |
+| **Notas / Diario** | Sinergia con `Documentos\Notes` y Proyectos | ✅ Implementado | 🟢 Nulo (Lua nativo) |
 | **Formateo** | Migrar de `neoformat` a `conform.nvim` | 🟡 Media | 🟢 Nulo |
 | **Inteligencia** | LSP básico (`nvim-lspconfig`) | 🟡 Media | 🟡 Bajo (Configuración) |
 | **Inteligencia** | Gestor de binarios `mason.nvim` | ⚪ Opcional | 🔴 Medio (Descargas binarias externas) |
@@ -24,24 +24,13 @@ Cada propuesta incluye su **propósito**, **impacto en el flujo de trabajo**, **
 
 ## 1. 🌳 Resaltado Estructural y Sintaxis Avanzada (Treesitter)
 
-- [ ] **Configuración activa de `nvim-treesitter`**
-  - **Estado actual:** El plugin está descargado en disco como dependencia de `debugprint.nvim`, pero no tiene activado el módulo de resaltado ni parsers compilados.
-  - **Mejora:** Crear `lua/config/treesitter.lua` con:
-    ```lua
-    require("nvim-treesitter.configs").setup {
-        ensure_installed = { "lua", "vim", "vimdoc", "sql", "powershell", "json", "markdown", "markdown_inline" },
-        highlight = { enable = true },
-        indent = { enable = true },
-    }
-    ```
-  - **Beneficio:** Resaltado de sintaxis mucho más preciso y contextual que las expresiones regulares tradicionales de Vim.
-  - **Riesgo:** **Nulo**. No requiere conexiones de red tras la compilación de los parsers con el compilador C (`gcc`).
+- [x] **Configuración activa de `nvim-treesitter`** *(Implementado con lazy-loading en `lua/config/treesitter.lua`)*
 
 ---
 
-## 2. 🗂️ Navegación y Gestión de Ficheros Moderna (`oil.nvim`)
+## 2. 🗂️ Navegación y Gestión de Ficheros (`NERDTree` vs `oil.nvim`)
 
-- [ ] **Sustituir `scrooloose/nerdtree` por [`stevearc/oil.nvim`](https://github.com/stevearc/oil.nvim)**
+- [x] **Sustituir `scrooloose/nerdtree` por `oil.nvim`** *(Descartado: Se mantiene `NERDTree` como explorador de árbol en barra lateral según preferencia del usuario)*
   - **Estado actual:** NERDTree es un plugin histórico en Vimscript que ocupa espacio visual en un split lateral.
   - **Mejora:** `oil.nvim` permite editar el sistema de archivos **como si fuera un buffer normal de texto**:
     - Cambiar el nombre de un archivo = editar la línea y guardar con `:w`.
