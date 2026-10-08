@@ -166,6 +166,15 @@ function M.omit_markdown_task_range(start_line, end_line)
   vim.api.nvim_buf_set_lines(0, start_line - 1, end_line, false, new_lines)
 end
 
+function M.add_task_note()
+  local lnum = vim.fn.line(".")
+  local time_str = os.date("%H:%M")
+  local note_prefix = string.format("    [%s] ", time_str)
+  vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { note_prefix })
+  vim.api.nvim_win_set_cursor(0, { lnum + 1, #note_prefix })
+  vim.cmd("startinsert!")
+end
+
 function M.roll_notes()
   local notes_dir = get_notes_dir()
   if vim.fn.isdirectory(notes_dir) == 0 then
