@@ -216,21 +216,25 @@ function M.roll_notes()
 
   local to_add = {}
   for _, task in ipairs(pending_tasks) do
-    if not today_content:find(task, 1, true) then
-      table.insert(to_add, "- [ ] " .. task)
+    local base_task = task:match("^%s*%[%>%s*%d%d%d%d%d%d%d%d%]%s*(.*)$") or task
+    if not today_content:find(base_task, 1, true) then
+      table.insert(to_add, string.format("- [ ] [> %s] %s", prev.name, base_task))
     end
   end
 
   if #to_add > 0 then
-    local append_lines = { "", "## Migradas de " .. prev.name }
-    for _, item in ipairs(to_add) do
-      table.insert(append_lines, item)
+    -- Encontrar la posición de inserción: justo después de # YYYYMMDD y líneas vacías
+    local insert_idx = 0
+    for idx, line in ipairs(today_lines) do
+      if line:match("^#%s+") then
+        insert_idx = idx
+        while insert_idx < #today_lines and today_lines[insert_idx + 1] == "" do
+          insert_idx = insert_idx + 1
+        end
+        break
+      end
     end
-    local last_line_idx = #today_lines
-    if last_line_idx > 0 and today_lines[last_line_idx] == "" then
-      table.remove(append_lines, 1)
-    end
-    vim.api.nvim_buf_set_lines(0, -1, -1, false, append_lines)
+    vim.api.nvim_buf_set_lines(0, insert_idx, insert_idx, false, to_add)
     vim.cmd("silent! write")
   end
 
