@@ -515,4 +515,88 @@ function M.show_hours()
   vim.keymap.set("n", "<Esc>", close_fn, { buffer = buf, nowait = true })
 end
 
+function M.open_in_browser(is_time_entry, target_id)
+  local function do_open(id)
+    if not id or id == "" then
+      vim.notify("No se especificó ningún número de ticket.", vim.log.levels.WARN)
+      return
+    end
+    local clean_id = id:gsub("[#%s]", "")
+    local base_url = "https://bluemine.pkf-attest.es/issues/" .. clean_id
+    local url = is_time_entry and (base_url .. "/time_entries/new") or base_url
+    vim.ui.open(url)
+    local desc = is_time_entry and "formulario de tiempo" or "ticket"
+    vim.notify(string.format("✓ Abriendo %s #%s en Bluemine...", desc, clean_id), vim.log.levels.INFO)
+  end
+
+  if target_id and target_id ~= "" then
+    do_open(target_id)
+    return
+  end
+
+  local line = vim.api.nvim_get_current_line()
+  local found_id = line:match("#(%d%d%d%d+)") or line:match("(%d%d%d%d%d+)")
+
+  if not found_id then
+    local cur_lnum = vim.fn.line(".")
+    for l = cur_lnum - 1, math.max(1, cur_lnum - 15), -1 do
+      local prev_l = vim.fn.getline(l)
+      found_id = prev_l:match("#(%d%d%d%d+)")
+      if found_id then break end
+    end
+  end
+
+  if found_id then
+    do_open(found_id)
+  else
+    vim.ui.input({ prompt = "Número de ticket Bluemine a abrir: " }, function(input)
+      if input and input ~= "" then
+        do_open(input)
+      end
+    end)
+  end
+end
+
+function M.hours_step()
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = math.min(math.floor(vim.o.columns * 0.9), 92)
+  local height = math.min(math.floor(vim.o.lines * 0.85), 26)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+    title = " Asistente Guiado de Imputación Bluemine (:HoursStep) ",
+    title_pos = "center",
+  })
+
+  local cmd = "powershell -NoLogo -NoProfile -Command \". $HOME/.dotfiles/powershell/Microsoft.PowerShell_profile.ps1; hours -Step\""
+  if vim.fn.executable("pwsh") == 1 then
+    cmd = "pwsh -NoLogo -NoProfile -Command \". $HOME/.dotfiles/powershell/Microsoft.PowerShell_profile.ps1; hours -Step\""
+  end
+
+  vim.fn.termopen(cmd, {
+    on_exit = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+    end,
+  })
+  vim.cmd("startinsert")
+
+  local close_fn = function()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
+  vim.keymap.set("n", "q", close_fn, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", close_fn, { buffer = buf, nowait = true })
+end
+
 return M
