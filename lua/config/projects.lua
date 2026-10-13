@@ -686,7 +686,7 @@ local function record_time_entry(timer, hours, minutes, comment)
   local start_hm = os.date("%H:%M", start_time)
   local end_hm = os.date("%H:%M")
   local comment_str = (comment and comment ~= "") and (" | " .. comment) or ""
-  local entry_line = string.format("    [%s - %s] %.2fh%s", start_hm, end_hm, hours, comment_str)
+  local entry_line = string.format("    [%s - %s] %gh%s", start_hm, end_hm, hours, comment_str)
 
   local target_path = timer.File
   if not target_path or target_path == "" then
@@ -773,9 +773,10 @@ function M.task_start()
       local start_time = parse_iso_time(prev_timer.StartTime)
       local elapsed_sec = math.max(0, os.time() - start_time)
       local elapsed_min = math.max(1, math.floor(elapsed_sec / 60))
-      local hours = math.max(0.05, math.floor((elapsed_min / 60) * 100 + 0.5) / 100)
+      local quarters = math.max(1, math.ceil(elapsed_min / 15.0))
+      local hours = quarters * 0.25
       record_time_entry(prev_timer, hours, elapsed_min, "Cambio de tarea")
-      vim.notify(string.format("● Tarea anterior cerrada: %.2fh registradas.", hours), vim.log.levels.INFO)
+      vim.notify(string.format("● Tarea anterior cerrada: %gh registradas.", hours), vim.log.levels.INFO)
     end
 
     local ticket_id = target_text:match("#(%d%d%d%d%d+)")
@@ -814,13 +815,14 @@ function M.task_stop()
   local start_time = parse_iso_time(timer.StartTime)
   local elapsed_sec = math.max(0, os.time() - start_time)
   local elapsed_min = math.max(1, math.floor(elapsed_sec / 60))
-  local hours = math.max(0.05, math.floor((elapsed_min / 60) * 100 + 0.5) / 100)
+  local quarters = math.max(1, math.ceil(elapsed_min / 15.0))
+  local hours = quarters * 0.25
 
-  local prompt_msg = string.format("Comentario para %.2fh en '%s' (opcional): ", hours, timer.TaskText:sub(1, 40))
+  local prompt_msg = string.format("Comentario para %gh en '%s' (opcional): ", hours, timer.TaskText:sub(1, 40))
   vim.ui.input({ prompt = prompt_msg }, function(comment)
     local entry_line = record_time_entry(timer, hours, elapsed_min, comment)
     remove_timer()
-    vim.notify(string.format("✓ Cronómetro DETENIDO: %.2fh (%d min) registradas:\n  ↳ %s", hours, elapsed_min, entry_line:gsub("^%s*", "")), vim.log.levels.INFO)
+    vim.notify(string.format("✓ Cronómetro DETENIDO: %gh (%d min) registradas:\n  ↳ %s", hours, elapsed_min, entry_line:gsub("^%s*", "")), vim.log.levels.INFO)
   end)
 end
 
@@ -835,9 +837,10 @@ function M.task_status()
   local elapsed_sec = math.max(0, os.time() - start_time)
   local elapsed_min = math.floor(elapsed_sec / 60)
   local rem_sec = elapsed_sec % 60
-  local hours = math.floor((elapsed_min / 60) * 100 + 0.5) / 100
+  local quarters = math.max(1, math.ceil(math.max(1, elapsed_min) / 15.0))
+  local hours = quarters * 0.25
 
-  vim.notify(string.format("⏱ Cronómetro Activo: %d min %d seg (~%.2fh)\n  Tarea: %s\n  Inicio: %s",
+  vim.notify(string.format("⏱ Cronómetro Activo: %d min %d seg (~%gh)\n  Tarea: %s\n  Inicio: %s",
     elapsed_min, rem_sec, hours, timer.TaskText, os.date("%H:%M:%S", start_time)), vim.log.levels.INFO)
 end
 
