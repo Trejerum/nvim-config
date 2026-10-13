@@ -43,3 +43,22 @@ opt.timeoutlen = 300    -- Tiempo de espera para secuencias de teclas (ms)
 -- Barra superior de pestañas/buffers siempre visible
 opt.showtabline = 2
 
+-- Limpieza automática de archivos temporales huérfanos de ShaDa en Windows (evita error E138 al cerrar)
+local function clean_shada_tmps()
+  local shada_dir = vim.fn.stdpath("data") .. "/shada"
+  if vim.fn.isdirectory(shada_dir) == 1 then
+    local tmps = vim.fn.globpath(shada_dir, "*.tmp.*", false, true)
+    for _, f in ipairs(tmps) do
+      pcall(os.remove, f)
+    end
+  end
+end
+vim.api.nvim_create_autocmd({ "VimEnter", "VimLeavePre" }, {
+  callback = clean_shada_tmps,
+})
+
+-- Cerrar Neovim si la única ventana restante es NERDTree
+vim.api.nvim_create_autocmd("BufEnter", {
+  command = "if tabpagenr('$') == 1 && winnr('$') == 1 && exists('b:NERDTree') && b:NERDTree.isTabTree() | quit | endif",
+})
+
