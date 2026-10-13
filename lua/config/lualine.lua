@@ -33,7 +33,27 @@ require('lualine').setup {
     lualine_y = {},
     lualine_z = {}
   },
-  tabline = {},
+  tabline = {
+    lualine_a = {
+      {
+        'buffers',
+        show_modified_status = true,
+        use_mode_colors = false,
+        mode = 2,
+        symbols = {
+          modified = ' [●]',
+          alternate_file = '',
+          directory = '[Dir] ',
+        },
+        filetype_names = {
+          nerdtree = 'NERDTree',
+          lazy = 'Lazy',
+          help = 'Help',
+        },
+      }
+    },
+    lualine_z = {'tabs'},
+  },
   winbar = {},
   inactive_winbar = {},
   extensions = {}

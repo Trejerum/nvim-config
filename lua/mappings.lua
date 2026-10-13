@@ -8,6 +8,28 @@ keymap.set('n', '<Leader>th', '<cmd>Telescope help_tags<cr>')
 keymap.set('n', '<Leader>ts', '<cmd>Telescope grep_string<cr>')
 keymap.set('n', '<Leader>tr', '<cmd>Telescope resume<cr>')
 
+-- GESTIÓN DE BUFFERS & PESTAÑAS (Barra Superior)
+keymap.set('n', 'H', '<cmd>bprevious<cr>', { desc = "Pestaña/Buffer anterior (izquierda)" })
+keymap.set('n', 'L', '<cmd>bnext<cr>', { desc = "Pestaña/Buffer siguiente (derecha)" })
+keymap.set('n', '[b', '<cmd>bprevious<cr>', { desc = "Pestaña/Buffer anterior" })
+keymap.set('n', ']b', '<cmd>bnext<cr>', { desc = "Pestaña/Buffer siguiente" })
+keymap.set('n', '<Leader><Leader>', '<C-^>', { desc = "Alternar entre los dos últimos archivos" })
+keymap.set('n', '<Leader>bn', '<cmd>bnext<cr>', { desc = "Pestaña siguiente" })
+keymap.set('n', '<Leader>bp', '<cmd>bprevious<cr>', { desc = "Pestaña anterior" })
+
+local function close_current_buffer()
+  local cur = vim.api.nvim_get_current_buf()
+  local bufs = vim.fn.getbufinfo({ buflisted = 1 })
+  if #bufs > 1 then
+    vim.cmd("bprevious")
+    vim.cmd("bdelete " .. cur)
+  else
+    vim.cmd("bdelete " .. cur)
+  end
+end
+keymap.set('n', '<Leader>bd', close_current_buffer, { desc = "Cerrar pestaña/buffer actual" })
+vim.api.nvim_create_user_command("Bd", close_current_buffer, { desc = "Cerrar pestaña/buffer actual" })
+
 -- PROYECTOS & NOTAS (Sinergia con Documentos\Proyectos y Notes)
 keymap.set('n', '<Leader>pp', function() require('config.projects').find_projects() end, { desc = "Proyectos: Selector y cambio de directorio" })
 keymap.set('n', '<Leader>nn', function() require('config.projects').open_daily_note() end, { desc = "Notas: Abrir nota diaria de trabajo" })

@@ -39,3 +39,7 @@ opt.wrap = false        -- Evitar partir lineas largas automaticamente
 -- Rendimiento y tiempos de respuesta
 opt.updatetime = 250    -- Tiempo de refresco para GitSigns y CursorHold (ms)
 opt.timeoutlen = 300    -- Tiempo de espera para secuencias de teclas (ms)
+
+-- Barra superior de pestañas/buffers siempre visible
+opt.showtabline = 2
+
