@@ -175,6 +175,47 @@ function M.add_task_note()
   vim.cmd("startinsert!")
 end
 
+function M.set_task_priority(level)
+  local line = vim.api.nvim_get_current_line()
+  if not line:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]") then
+    vim.notify("La línea actual no es una tarea Markdown (- [ ]).", vim.log.levels.WARN)
+    return
+  end
+
+  local clean_line = line:gsub("(%[%s*[xX>~-]%s*%]%s*)%[P%d%]%s*", "%1")
+  local str_level = tostring(level or "0")
+
+  if str_level == "1" or str_level == "2" or str_level == "3" then
+    local new_line = clean_line:gsub("^(%s*[-*+]%s*%[[ xX>~-]%s*%]%s*)", "%1[P" .. str_level .. "] ")
+    vim.api.nvim_set_current_line(new_line)
+    vim.notify("✓ Prioridad [P" .. str_level .. "] asignada.", vim.log.levels.INFO)
+  else
+    vim.api.nvim_set_current_line(clean_line)
+    vim.notify("✓ Prioridad retirada.", vim.log.levels.INFO)
+  end
+end
+
+function M.cycle_task_priority()
+  local line = vim.api.nvim_get_current_line()
+  if not line:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]") then
+    vim.notify("La línea actual no es una tarea Markdown (- [ ]).", vim.log.levels.WARN)
+    return
+  end
+
+  local cur_pri = line:match("%[P(%d)%]")
+  local next_level = 1
+  if not cur_pri then
+    next_level = 1
+  elseif cur_pri == "1" then
+    next_level = 2
+  elseif cur_pri == "2" then
+    next_level = 3
+  else
+    next_level = 0
+  end
+  M.set_task_priority(next_level)
+end
+
 function M.roll_notes()
   local notes_dir = get_notes_dir()
   if vim.fn.isdirectory(notes_dir) == 0 then
@@ -342,7 +383,7 @@ function M.goto_task_origin()
   end
 end
 
--- Configurar búsqueda de notas para salto con comando 'gf' nativo de Vim
+-- Configurar búsqueda de notas para salto con comando 'gf' nativo de Vim y colores de prioridades
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "markdown",
   callback = function()
@@ -351,6 +392,14 @@ vim.api.nvim_create_autocmd("FileType", {
     if vim.fn.isdirectory(ndir) == 1 then
       vim.opt_local.path:prepend(ndir)
     end
+    vim.cmd([[
+      syntax match TodoPriP1 "\[P1\]"
+      syntax match TodoPriP2 "\[P2\]"
+      syntax match TodoPriP3 "\[P3\]"
+      highlight default TodoPriP1 guifg=#ff5555 gui=bold ctermfg=Red cterm=bold
+      highlight default TodoPriP2 guifg=#ffb86c gui=bold ctermfg=Yellow cterm=bold
+      highlight default TodoPriP3 guifg=#8be9fd gui=bold ctermfg=Cyan cterm=bold
+    ]])
   end,
 })
 

@@ -58,6 +58,11 @@ keymap.set('n', '<Leader>xl', function() require('config.projects').open_in_brow
 keymap.set('n', '<Leader>xw', function() require('config.projects').hours_step() end, { desc = "Bluemine: Asistente guiado de imputación en la web (:HoursStep)" })
 keymap.set('n', '<Leader>xr', function() require('config.projects').todo_wizard() end, { desc = "Notas: Asistente guiado de revisión de tareas (:TodoWizard)" })
 keymap.set('n', '<Leader>xg', function() require('config.projects').goto_task_origin() end, { desc = "Notas: Saltar al origen de la tarea migrada (:TodoOrigin)" })
+keymap.set('n', '<Leader>x1', function() require('config.projects').set_task_priority(1) end, { desc = "Notas: Asignar prioridad [P1] a la tarea actual" })
+keymap.set('n', '<Leader>x2', function() require('config.projects').set_task_priority(2) end, { desc = "Notas: Asignar prioridad [P2] a la tarea actual" })
+keymap.set('n', '<Leader>x3', function() require('config.projects').set_task_priority(3) end, { desc = "Notas: Asignar prioridad [P3] a la tarea actual" })
+keymap.set('n', '<Leader>x0', function() require('config.projects').set_task_priority(0) end, { desc = "Notas: Quitar prioridad de la tarea actual" })
+keymap.set('n', '<Leader>xy', function() require('config.projects').cycle_task_priority() end, { desc = "Notas: Rotar prioridad de tarea ([ ] -> P1 -> P2 -> P3 -> [ ])" })
 
 vim.api.nvim_create_user_command("Projects", function() require('config.projects').find_projects() end, { desc = "Selector de proyectos en Telescope" })
 vim.api.nvim_create_user_command("DailyNote", function() require('config.projects').open_daily_note() end, { desc = "Abrir nota de trabajo diaria" })
@@ -74,6 +79,13 @@ vim.api.nvim_create_user_command("TodoWizard", function() require('config.projec
 vim.api.nvim_create_user_command("TodoReview", function() require('config.projects').todo_wizard() end, { desc = "Alias de TodoWizard" })
 vim.api.nvim_create_user_command("TodoOrigin", function() require('config.projects').goto_task_origin() end, { desc = "Saltar a la nota de origen de la tarea migrada" })
 vim.api.nvim_create_user_command("NoteOrigin", function() require('config.projects').goto_task_origin() end, { desc = "Alias de TodoOrigin" })
+vim.api.nvim_create_user_command("TodoPri", function(opts)
+  local lvl = tonumber(opts.args) or 0
+  require('config.projects').set_task_priority(lvl)
+end, { nargs = "?", desc = "Asignar prioridad a la tarea actual (1=P1, 2=P2, 3=P3, 0=quitar)" })
+vim.api.nvim_create_user_command("TodoP1", function() require('config.projects').set_task_priority(1) end, { desc = "Asignar prioridad P1 a tarea actual" })
+vim.api.nvim_create_user_command("TodoP2", function() require('config.projects').set_task_priority(2) end, { desc = "Asignar prioridad P2 a tarea actual" })
+vim.api.nvim_create_user_command("TodoP3", function() require('config.projects').set_task_priority(3) end, { desc = "Asignar prioridad P3 a tarea actual" })
 vim.api.nvim_create_user_command("BmOpen", function(opts) require('config.projects').open_in_browser(false, opts.args) end, { nargs = "?", desc = "Abrir ticket en Bluemine" })
 vim.api.nvim_create_user_command("BmTime", function(opts) require('config.projects').open_in_browser(true, opts.args) end, { nargs = "?", desc = "Abrir formulario de imputación de tiempo en Bluemine" })
 
