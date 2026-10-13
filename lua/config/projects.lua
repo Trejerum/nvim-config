@@ -599,4 +599,48 @@ function M.hours_step()
   vim.keymap.set("n", "<Esc>", close_fn, { buffer = buf, nowait = true })
 end
 
+function M.todo_wizard()
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = math.min(math.floor(vim.o.columns * 0.9), 92)
+  local height = math.min(math.floor(vim.o.lines * 0.85), 26)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+    title = " Asistente de Revisión de Tareas (:TodoWizard) ",
+    title_pos = "center",
+  })
+
+  local cmd = "powershell -NoLogo -NoProfile -Command \". $HOME/.dotfiles/powershell/Microsoft.PowerShell_profile.ps1; todo -Wizard\""
+  if vim.fn.executable("pwsh") == 1 then
+    cmd = "pwsh -NoLogo -NoProfile -Command \". $HOME/.dotfiles/powershell/Microsoft.PowerShell_profile.ps1; todo -Wizard\""
+  end
+
+  vim.fn.termopen(cmd, {
+    on_exit = function()
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+      end
+      vim.cmd("checktime")
+    end,
+  })
+  vim.cmd("startinsert")
+
+  local close_fn = function()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
+  vim.keymap.set("n", "q", close_fn, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", close_fn, { buffer = buf, nowait = true })
+end
+
 return M
+
