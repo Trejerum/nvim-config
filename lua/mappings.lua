@@ -35,6 +35,7 @@ keymap.set('n', '<Leader>xb', function() require('config.projects').open_in_brow
 keymap.set('n', '<Leader>xl', function() require('config.projects').open_in_browser(true) end, { desc = "Bluemine: Abrir formulario de imputación del ticket (:BmTime)" })
 keymap.set('n', '<Leader>xw', function() require('config.projects').hours_step() end, { desc = "Bluemine: Asistente guiado de imputación en la web (:HoursStep)" })
 keymap.set('n', '<Leader>xr', function() require('config.projects').todo_wizard() end, { desc = "Notas: Asistente guiado de revisión de tareas (:TodoWizard)" })
+keymap.set('n', '<Leader>xg', function() require('config.projects').goto_task_origin() end, { desc = "Notas: Saltar al origen de la tarea migrada (:TodoOrigin)" })
 
 vim.api.nvim_create_user_command("Projects", function() require('config.projects').find_projects() end, { desc = "Selector de proyectos en Telescope" })
 vim.api.nvim_create_user_command("DailyNote", function() require('config.projects').open_daily_note() end, { desc = "Abrir nota de trabajo diaria" })
@@ -49,6 +50,8 @@ vim.api.nvim_create_user_command("Hours", function() require('config.projects').
 vim.api.nvim_create_user_command("HoursStep", function() require('config.projects').hours_step() end, { desc = "Asistente guiado de imputación web en Bluemine" })
 vim.api.nvim_create_user_command("TodoWizard", function() require('config.projects').todo_wizard() end, { desc = "Asistente interactivo guiado para triar/revisar tareas pendientes" })
 vim.api.nvim_create_user_command("TodoReview", function() require('config.projects').todo_wizard() end, { desc = "Alias de TodoWizard" })
+vim.api.nvim_create_user_command("TodoOrigin", function() require('config.projects').goto_task_origin() end, { desc = "Saltar a la nota de origen de la tarea migrada" })
+vim.api.nvim_create_user_command("NoteOrigin", function() require('config.projects').goto_task_origin() end, { desc = "Alias de TodoOrigin" })
 vim.api.nvim_create_user_command("BmOpen", function(opts) require('config.projects').open_in_browser(false, opts.args) end, { nargs = "?", desc = "Abrir ticket en Bluemine" })
 vim.api.nvim_create_user_command("BmTime", function(opts) require('config.projects').open_in_browser(true, opts.args) end, { nargs = "?", desc = "Abrir formulario de imputación de tiempo en Bluemine" })
 

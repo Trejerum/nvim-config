@@ -225,9 +225,11 @@ function M.roll_notes()
 
   local to_add = {}
   for _, task in ipairs(pending_tasks) do
-    local base_task = task:match("^%s*%[%>%s*%d%d%d%d%d%d%d%d%]%s*(.*)$") or task
+    local base_task = task:match("^%s*%[%>%s*[^%]]+%]%([^%)]+%)%s*(.*)$")
+      or task:match("^%s*%[%>%s*[^%]]+%]%s*(.*)$")
+      or task
     if not today_content:find(base_task, 1, true) then
-      table.insert(to_add, string.format("- [ ] [> %s] %s", prev.name, base_task))
+      table.insert(to_add, string.format("- [ ] [> %s](%s.md) %s", prev.name, prev.name, base_task))
     end
   end
 
@@ -259,6 +261,98 @@ function M.roll_notes()
     vim.notify(string.format("ℹ Las tareas pendientes de %s.md ya estaban en hoy (marcadas como [>] en el origen).", prev.name), vim.log.levels.INFO)
   end
 end
+
+function M.goto_task_origin()
+  local line = vim.api.nvim_get_current_line()
+  local notes_dir = get_notes_dir()
+
+  -- 1. Buscar referencia a archivo de origen en la línea actual
+  -- Formatos soportados:
+  --   a) [> 20261012](20261012.md) o [texto](archivo.md)
+  --   b) [> 20261012] o [> 2026-10-12]
+  --   c) [[20261012]] o [[20261012.md]]
+  local target_file = nil
+
+  -- Caso a: Enlace markdown estándar tipo (...*.md)
+  local md_link = line:match("%(%s*([%w%-_]+%.md)%s*%)")
+  if md_link then
+    target_file = md_link
+  else
+    -- Caso b: Etiqueta [> YYYYMMDD] o [> YYYY-MM-DD]
+    local tag_date = line:match("%[%>%s*([%w%-_]+)%]")
+    if tag_date then
+      target_file = tag_date .. ".md"
+    else
+      -- Caso c: Wiki-link [[YYYYMMDD]]
+      local wiki_link = line:match("%[%[([%w%-_]+)%]%]")
+      if wiki_link then
+        target_file = wiki_link:match("%.md$") and wiki_link or (wiki_link .. ".md")
+      end
+    end
+  end
+
+  if not target_file then
+    vim.notify("No se encontró ningún enlace o referencia de origen ([> YYYYMMDD](...) o [> YYYYMMDD]) en la línea actual.", vim.log.levels.WARN)
+    return
+  end
+
+  local full_path = notes_dir .. "/" .. target_file
+  if vim.fn.filereadable(full_path) == 0 then
+    local found = vim.fn.globpath(notes_dir, "**/" .. target_file, false, true)
+    if #found > 0 then
+      full_path = found[1]
+    else
+      vim.notify("No se encontró el archivo de notas de origen: " .. target_file, vim.log.levels.ERROR)
+      return
+    end
+  end
+
+  -- Extraer el texto base de la tarea para ubicarla en el origen
+  local task_desc = line:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]%s*(.*)$") or line
+  local base_task = task_desc:gsub("^%[%>%s*[^%]]+%]%([^%)]+%)%s*", "")
+                             :gsub("^%[%>%s*[^%]]+%]%s*", "")
+                             :gsub("^%[%[[^%]]+%]%]%s*", "")
+                             :gsub("^%s+", ""):gsub("%s+$", "")
+
+  -- Guardar posición actual en el jumplist para volver fácil con <Ctrl-o>
+  vim.cmd("normal! m'")
+
+  -- Abrir archivo origen
+  vim.cmd("edit " .. vim.fn.fnameescape(full_path))
+
+  -- Localizar línea de la tarea original
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local target_lnum = nil
+
+  if base_task and base_task ~= "" then
+    for idx, l in ipairs(lines) do
+      if l:find(base_task, 1, true) then
+        target_lnum = idx
+        break
+      end
+    end
+  end
+
+  if target_lnum then
+    vim.api.nvim_win_set_cursor(0, { target_lnum, 0 })
+    vim.cmd("normal! zz")
+    vim.notify(string.format("✓ Origen en %s (Línea %d). Usa <Ctrl-o> para volver.", target_file, target_lnum), vim.log.levels.INFO)
+  else
+    vim.notify(string.format("ℹ Abierto %s. Usa <Ctrl-o> para volver a la nota de hoy.", target_file), vim.log.levels.INFO)
+  end
+end
+
+-- Configurar búsqueda de notas para salto con comando 'gf' nativo de Vim
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "markdown",
+  callback = function()
+    local ndir = get_notes_dir()
+    vim.opt_local.suffixesadd:prepend(".md")
+    if vim.fn.isdirectory(ndir) == 1 then
+      vim.opt_local.path:prepend(ndir)
+    end
+  end,
+})
 
 -- ==============================================================================
 -- CRONÓMETRO DE TAREAS & CONTROL DE HORAS (Sinergia con profile.d/35-bluemine.ps1)
