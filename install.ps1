@@ -1,114 +1,197 @@
 ﻿# ==============================================================================
-# INSTALADOR Y APROVISIONAMIENTO DE LA CONFIGURACION DE NEOVIM
+# INSTALADOR Y APROVISIONAMIENTO DE LA CONFIGURACIÓN DE NEOVIM
 # ==============================================================================
 # Ejecuta este script en un equipo nuevo tras clonar el repositorio:
-#   .\install.ps1
+#   .\install.ps1               # Instalación interactiva guiada
+#   .\install.ps1 -All          # Instalación desatendida completa
+#   .\install.ps1 -InstallMissing
 # ==============================================================================
 
 [CmdletBinding()]
 param(
+    [switch]$All,
     [switch]$InstallMissing,
-    [switch]$SyncPlugins
+    [switch]$NoTools,
+    [switch]$SyncPlugins,
+    [switch]$Force
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 Write-Host "`n==========================================================" -ForegroundColor Cyan
-Write-Host "  Instalacion y Configuracion del Entorno Neovim" -ForegroundColor Cyan
+Write-Host "  Instalación y Configuración del Entorno Neovim" -ForegroundColor Cyan
 Write-Host "==========================================================`n" -ForegroundColor Cyan
 
-# 1. Comprobacion y verificacion de Neovim
-Write-Host "[*] Comprobando instalacion de Neovim..." -ForegroundColor Cyan
-$nvimCmd = Get-Command -Name "nvim" -CommandType Application -ErrorAction SilentlyContinue
+# ------------------------------------------------------------------------------
+# 0. FUNCIONES AUXILIARES DE ENTORNO Y WINGET
+# ------------------------------------------------------------------------------
 
-if ($nvimCmd) {
-    $rawVersion = & $nvimCmd.Source --version | Select-Object -First 1
-    Write-Host "[+] Neovim detectado: $rawVersion" -ForegroundColor Green
-    Write-Host "    Ruta: $($nvimCmd.Source)" -ForegroundColor DarkGray
-}
-else {
-    Write-Host "[-] Neovim NO esta instalado o no se encuentra en el PATH." -ForegroundColor Red
-    if ($InstallMissing) {
-        Write-Host "[*] Instalando Neovim mediante winget..." -ForegroundColor Cyan
-        winget install Neovim.Neovim --accept-source-agreements --accept-package-agreements
-    }
-    else {
-        Write-Host "    Instalalo con: winget install Neovim.Neovim" -ForegroundColor Yellow
+function Update-SessionPath {
+    try {
+        $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+        $userPath    = [Environment]::GetEnvironmentVariable('Path', 'User')
+        $env:PATH    = "$userPath;$machinePath"
+    } catch {
+        Write-Warning "No se pudo actualizar `$env:PATH dinámicamente: $_"
     }
 }
 
-# 2. Comprobacion de herramientas CLI recomendadas
-Write-Host "`n--- Comprobando herramientas recomendadas del sistema ---" -ForegroundColor DarkGray
+function Test-CommandAvailable ([string]$CmdName) {
+    if (Get-Command -Name $CmdName -CommandType Application, Alias -ErrorAction SilentlyContinue) {
+        return $true
+    }
+    Update-SessionPath
+    return [bool](Get-Command -Name $CmdName -CommandType Application, Alias -ErrorAction SilentlyContinue)
+}
 
-$cliTools = @(
-    @{ Cmd = "git"; Name = "Git (Gestor de versiones y plugins)"; Winget = "Git.Git"; Required = $true }
-    @{ Cmd = "rg";  Name = "Ripgrep (Busqueda ultrarrapida Telescope)"; Winget = "BurntSushi.ripgrep.MSVC"; Required = $true }
-    @{ Cmd = "fd";  Name = "fd (Buscador rapido de ficheros)"; Winget = "sharkdp.fd"; Required = $false }
-    @{ Cmd = "gcc"; Name = "GCC / Compilador C (Parsers de Treesitter)"; Winget = "LLVM.LLVM"; Required = $false }
+function Install-WingetPackage ([string]$PackageId, [string]$DisplayName, [string]$CheckCmd = $null) {
+    if ($CheckCmd -and (Test-CommandAvailable $CheckCmd)) {
+        Write-Host "  [OK] $DisplayName ya presente (comando '$CheckCmd')." -ForegroundColor Green
+        return $true
+    }
+
+    if (-not (Get-Command "winget" -ErrorAction SilentlyContinue)) {
+        Write-Warning "winget no está disponible en este equipo. No se puede instalar '$DisplayName'."
+        return $false
+    }
+
+    Write-Host "  [>>] Instalando $DisplayName ($PackageId) con winget..." -ForegroundColor Cyan
+    try {
+        $proc = Start-Process -FilePath "winget" -ArgumentList "install", $PackageId, "--accept-source-agreements", "--accept-package-agreements", "--disable-interactivity" -NoNewWindow -Wait -PassThru
+        Update-SessionPath
+        if ($proc.ExitCode -eq 0 -or $proc.ExitCode -eq -1978335189) {
+            Write-Host "  [OK] $DisplayName instalado/preparado correctamente." -ForegroundColor Green
+            return $true
+        } else {
+            Write-Warning "winget finalizó con código $($proc.ExitCode) para '$DisplayName'."
+            return $false
+        }
+    } catch {
+        Write-Warning "Error al invocar winget para '$DisplayName': $_"
+        return $false
+    }
+}
+
+# ------------------------------------------------------------------------------
+# 1. COMPROBACIÓN DE HERRAMIENTAS Y DEPENDENCIAS
+# ------------------------------------------------------------------------------
+Write-Host "1. Comprobando herramientas recomendadas..." -ForegroundColor DarkCyan
+
+$dependencies = @(
+    @{ Cmd = "nvim";  Name = "Neovim";                             Winget = "Neovim.Neovim";              Required = $true }
+    @{ Cmd = "git";   Name = "Git (Gestor de repos y plugins)";    Winget = "Git.Git";                    Required = $true }
+    @{ Cmd = "rg";    Name = "Ripgrep (Búsqueda Telescope)";       Winget = "BurntSushi.ripgrep.MSVC";    Required = $true }
+    @{ Cmd = "fd";    Name = "fd (Buscador de archivos Telescope)";Winget = "sharkdp.fd";                 Required = $false }
+    @{ Cmd = "clang"; Name = "LLVM / Clang (C para Treesitter)";   Winget = "LLVM.LLVM";                  Required = $false }
+    @{ Cmd = "font";  Name = "JetBrainsMono Nerd Font";            Winget = "DEVCOM.JetBrainsMonoNerdFont"; Required = $false }
 )
 
-$missingTools = @()
-foreach ($tool in $cliTools) {
-    $cmd = Get-Command -Name $tool.Cmd -CommandType Application -ErrorAction SilentlyContinue
-    if ($cmd) {
-        Write-Host "[+] $($tool.Name) encontrado en: $($cmd.Source)" -ForegroundColor Green
-    }
-    else {
+$missingReq = @()
+$missingOpt = @()
+foreach ($tool in $dependencies) {
+    $exists = if ($tool.Cmd -eq "font") { $false } else { Test-CommandAvailable $tool.Cmd }
+    if ($exists) {
+        Write-Host "  [OK] $($tool.Name) disponible en el sistema." -ForegroundColor Green
+    } else {
         if ($tool.Required) {
-            Write-Host "[-] $($tool.Name) NO encontrado (requerido)" -ForegroundColor Red
+            Write-Host "  [--] $($tool.Name) NO encontrado (requerido)." -ForegroundColor Yellow
+            $missingReq += $tool
+        } else {
+            Write-Host "  [○] $($tool.Name) no detectado (opcional)." -ForegroundColor DarkGray
+            $missingOpt += $tool
         }
-        else {
-            Write-Host "[o] $($tool.Name) no encontrado en PATH (opcional)" -ForegroundColor DarkGray
-        }
-        $missingTools += $tool.Winget
     }
 }
 
-if ($missingTools.Count -gt 0 -and -not $InstallMissing) {
-    Write-Host "`nTip: Puedes instalar las herramientas faltantes con winget:" -ForegroundColor DarkCyan
-    Write-Host "  winget install $($missingTools -join ' ')`n" -ForegroundColor DarkYellow
-}
-elseif ($missingTools.Count -gt 0 -and $InstallMissing) {
-    Write-Host "`n[*] Instalando dependencias faltantes..." -ForegroundColor Cyan
-    winget install $($missingTools -join ' ') --accept-source-agreements --accept-package-agreements
+# ------------------------------------------------------------------------------
+# 2. INSTALACIÓN DE HERRAMIENTAS FALTANTES
+# ------------------------------------------------------------------------------
+if (-not $NoTools -and ($missingReq.Count -gt 0 -or $missingOpt.Count -gt 0)) {
+    $shouldInstallReq = $false
+    $shouldInstallOpt = $false
+
+    $isInteractive = [Environment]::UserInteractive -and -not [Console]::IsInputRedirected
+
+    if ($All -or $InstallMissing) {
+        $shouldInstallReq = ($missingReq.Count -gt 0)
+        $shouldInstallOpt = ($missingOpt.Count -gt 0)
+    } elseif ($isInteractive) {
+        if ($missingReq.Count -gt 0) {
+            Write-Host ""
+            $ans = Read-Host "¿Deseas instalar las herramientas requeridas faltantes con winget? ($($missingReq.Name -join ', ')) [S/n]"
+            if ($ans -eq '' -or $ans -match '^[sSyY]') {
+                $shouldInstallReq = $true
+            }
+        }
+        if ($missingOpt.Count -gt 0) {
+            Write-Host ""
+            $ansOpt = Read-Host "¿Deseas instalar también utilidades opcionales (fuentes, compilador C)? ($($missingOpt.Name -join ', ')) [s/N]"
+            if ($ansOpt -match '^[sSyY]') {
+                $shouldInstallOpt = $true
+            }
+        }
+    }
+
+    if ($shouldInstallReq) {
+        Write-Host "`n[*] Instalando dependencias requeridas con winget..." -ForegroundColor Cyan
+        foreach ($t in $missingReq) {
+            $chk = if ($t.Cmd -eq "font") { $null } else { $t.Cmd }
+            Install-WingetPackage -PackageId $t.Winget -DisplayName $t.Name -CheckCmd $chk
+        }
+    }
+    if ($shouldInstallOpt) {
+        Write-Host "`n[*] Instalando utilidades opcionales con winget..." -ForegroundColor Cyan
+        foreach ($t in $missingOpt) {
+            $chk = if ($t.Cmd -eq "font") { $null } else { $t.Cmd }
+            Install-WingetPackage -PackageId $t.Winget -DisplayName $t.Name -CheckCmd $chk
+        }
+    }
+    Update-SessionPath
 }
 
-# 3. Verificacion de ubicacion del repositorio y vinculacion NTFS
+# ------------------------------------------------------------------------------
+# 3. VINCULACIÓN NTFS (%LOCALAPPDATA%\nvim -> Repositorio)
+# ------------------------------------------------------------------------------
+Write-Host "`n2. Verificando vinculación de la configuración..." -ForegroundColor DarkCyan
+
 $scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $targetDir = Join-Path $env:LOCALAPPDATA "nvim"
 
-Write-Host "`n[*] Verificando ubicacion de la configuracion..." -ForegroundColor Cyan
-$resolvedScript = (Resolve-Path -LiteralPath $scriptDir).Path
-$resolvedTarget = (Resolve-Path -LiteralPath $targetDir -ErrorAction SilentlyContinue).Path
+try {
+    $item = Get-Item -LiteralPath $targetDir -ErrorAction SilentlyContinue
+    $isJunction = $item -and ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)
 
-if ($resolvedTarget -and $resolvedScript -ieq $resolvedTarget) {
-    Write-Host "[+] La configuracion esta vinculada correctamente con: $targetDir" -ForegroundColor Green
-}
-else {
-    if (-not (Test-Path -LiteralPath $targetDir)) {
-        Write-Host "[*] Vinculando repositorio a '$targetDir' mediante Union NTFS (mklink /J)..." -ForegroundColor Cyan
+    if ($isJunction -and -not $Force) {
+        Write-Host "  [OK] Neovim en AppData ya está vinculado a dotfiles mediante Unión NTFS." -ForegroundColor Green
+    } else {
+        if (Test-Path -LiteralPath $targetDir) {
+            $bak = "${targetDir}_bak_$(Get-Date -Format 'yyyyMMddHHmmss')"
+            Move-Item -LiteralPath $targetDir -Destination $bak -Force
+            Write-Host "  (!) Configuración previa respaldada en '$bak'." -ForegroundColor Yellow
+        }
         cmd /c mklink /J "$targetDir" "$scriptDir" | Out-Null
-        Write-Host "[+] Union NTFS creada con exito: $targetDir -> $scriptDir" -ForegroundColor Green
+        Write-Host "  [OK] Unión NTFS creada con éxito: '$targetDir' -> '$scriptDir'." -ForegroundColor Green
     }
-    else {
-        Write-Host "[!] Nota: Este repositorio se encuentra en: $scriptDir" -ForegroundColor Yellow
-        Write-Host "    $targetDir ya existe pero no apunta a esta carpeta." -ForegroundColor DarkGray
-    }
+} catch {
+    Write-Warning "No se pudo vincular la configuración de Neovim: $_"
 }
 
-# 4. Sincronizacion inicial de plugins
-if ($SyncPlugins -or $nvimCmd) {
-    Write-Host "`n[*] Sincronizando plugins de Neovim con lazy.nvim (headless)..." -ForegroundColor Cyan
+# ------------------------------------------------------------------------------
+# 4. SINCRONIZACIÓN INICIAL DE PLUGINS (lazy.nvim)
+# ------------------------------------------------------------------------------
+if (Test-CommandAvailable "nvim") {
+    Write-Host "`n3. Sincronizando plugins con lazy.nvim (headless)..." -ForegroundColor DarkCyan
     try {
-        & nvim --headless "+Lazy! sync" +qa
-        Write-Host "[+] Plugins sincronizados correctamente." -ForegroundColor Green
+        $nvimProc = Start-Process -FilePath "nvim" -ArgumentList "--headless", "+Lazy! sync", "+qa" -NoNewWindow -Wait -PassThru
+        Write-Host "  [OK] Plugins sincronizados correctamente." -ForegroundColor Green
+    } catch {
+        Write-Warning "Aviso al sincronizar plugins: $_ (se descargarán la primera vez que abras nvim)."
     }
-    catch {
-        Write-Warning "No se pudo sincronizar automaticamente los plugins: $_"
-        Write-Host "    Se sincronizaran la primera vez que abras Neovim manualmente." -ForegroundColor DarkGray
-    }
+} else {
+    Write-Host "`n  ○ Neovim no está disponible en PATH para sincronizar plugins." -ForegroundColor DarkGray
 }
 
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host "  Puesta a punto completada! Ejecuta 'nvim' para empezar." -ForegroundColor Green
+Write-Host "  ¡Puesta a punto completada con éxito!" -ForegroundColor Green
+Write-Host "  Ejecuta 'nvim' para empezar a trabajar." -ForegroundColor Cyan
 Write-Host "==========================================================`n" -ForegroundColor Green
