@@ -216,7 +216,7 @@ function M.cycle_task_priority()
   M.set_task_priority(next_level)
 end
 
-function M.roll_notes()
+function M.roll_notes(include_notes)
   local notes_dir = get_notes_dir()
   if vim.fn.isdirectory(notes_dir) == 0 then
     vim.notify("El directorio de notas no existe: " .. notes_dir, vim.log.levels.WARN)
@@ -244,12 +244,20 @@ function M.roll_notes()
   local prev_lines = vim.fn.readfile(prev.path)
   local pending_tasks = {}
   local pending_indices = {}
+  local pending_subnotes = {}
 
   for idx, l in ipairs(prev_lines) do
     local task_text = l:match("^%s*[-*+]%s*%[%s%]%s*(.*)$")
     if task_text and task_text ~= "" then
       table.insert(pending_tasks, task_text)
       table.insert(pending_indices, idx)
+      local sub = {}
+      local j = idx + 1
+      while j <= #prev_lines and (prev_lines[j]:match("^%s%s%s%s%S") or prev_lines[j]:match("^\t%S")) do
+        table.insert(sub, prev_lines[j])
+        j = j + 1
+      end
+      table.insert(pending_subnotes, sub)
     end
   end
 
@@ -265,12 +273,17 @@ function M.roll_notes()
   local today_content = table.concat(today_lines, "\n")
 
   local to_add = {}
-  for _, task in ipairs(pending_tasks) do
+  for k, task in ipairs(pending_tasks) do
     local base_task = task:match("^%s*%[%>%s*[^%]]+%]%([^%)]+%)%s*(.*)$")
       or task:match("^%s*%[%>%s*[^%]]+%]%s*(.*)$")
       or task
     if not today_content:find(base_task, 1, true) then
       table.insert(to_add, string.format("- [ ] [> %s](%s.md) %s", prev.name, prev.name, base_task))
+      if include_notes and pending_subnotes[k] and #pending_subnotes[k] > 0 then
+        for _, sn in ipairs(pending_subnotes[k]) do
+          table.insert(to_add, sn)
+        end
+      end
     end
   end
 
@@ -296,8 +309,9 @@ function M.roll_notes()
   end
   vim.fn.writefile(prev_lines, prev.path)
 
+  local with_notes_label = include_notes and " (con apuntes)" or ""
   if #to_add > 0 then
-    vim.notify(string.format("✓ %d tarea(s) migrada(s) de %s.md a hoy (marcadas como [>] en el origen).", #to_add, prev.name), vim.log.levels.INFO)
+    vim.notify(string.format("✓ %d tarea(s) migrada(s)%s de %s.md a hoy (marcadas como [>] en el origen).", #to_add, with_notes_label, prev.name), vim.log.levels.INFO)
   else
     vim.notify(string.format("ℹ Las tareas pendientes de %s.md ya estaban en hoy (marcadas como [>] en el origen).", prev.name), vim.log.levels.INFO)
   end
@@ -381,6 +395,217 @@ function M.goto_task_origin()
   else
     vim.notify(string.format("ℹ Abierto %s. Usa <Ctrl-o> para volver a la nota de hoy.", target_file), vim.log.levels.INFO)
   end
+end
+
+function M.show_task_history()
+  local line = vim.api.nvim_get_current_line()
+  local notes_dir = get_notes_dir()
+  local lnum = vim.fn.line(".")
+  local current_buf_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  -- Si el cursor está en un apunte identado, subir a la tarea padre
+  if line:match("^%s%s%s%s%S") or line:match("^\t%S") then
+    for k = lnum - 1, 1, -1 do
+      if current_buf_lines[k]:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]") then
+        line = current_buf_lines[k]
+        lnum = k
+        break
+      end
+    end
+  end
+
+  if not line:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]") then
+    vim.notify("La línea actual no es una tarea Markdown (- [ ]).", vim.log.levels.WARN)
+    return
+  end
+
+  -- Extraer texto base eliminando marcas de migración y prioridad
+  local task_desc = line:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]%s*(.*)$") or line
+  local base_task = task_desc:gsub("^%[P%d%]%s*", "")
+                             :gsub("^%[%>%s*[^%]]+%]%([^%)]+%)%s*", "")
+                             :gsub("^%[%>%s*[^%]]+%]%s*", "")
+                             :gsub("^%[%[[^%]]+%]%]%s*", "")
+                             :gsub("^%s+", ""):gsub("%s+$", "")
+
+  if not base_task or base_task == "" then
+    vim.notify("No se pudo identificar la descripción base de la tarea.", vim.log.levels.WARN)
+    return
+  end
+
+  local current_file_path = vim.api.nvim_buf_get_name(0):gsub("\\", "/")
+  local current_file_name = vim.fn.fnamemodify(current_file_path, ":t")
+  local current_base_name = vim.fn.fnamemodify(current_file_path, ":t:r")
+
+  local chain = {}
+  local visited = {}
+
+  -- Nodo inicial (buffer actual)
+  local cur_subnotes = {}
+  local j = lnum + 1
+  while j <= #current_buf_lines and (current_buf_lines[j]:match("^%s%s%s%s%S") or current_buf_lines[j]:match("^\t%S")) do
+    table.insert(cur_subnotes, (current_buf_lines[j]:gsub("^%s+", "")))
+    j = j + 1
+  end
+
+  local cur_marker = line:match("^%s*[-*+]%s*%[([ xX>~-])%]") or " "
+  table.insert(chain, {
+    file = current_file_path,
+    name = current_file_name,
+    base_name = current_base_name,
+    marker = cur_marker,
+    line_num = lnum,
+    subnotes = cur_subnotes,
+    raw_line = line
+  })
+  visited[current_file_path] = true
+
+  local search_line = line
+  while true do
+    local prev_file = search_line:match("%(%s*([%w%-_]+%.md)%s*%)")
+    if not prev_file then
+      local tag_date = search_line:match("%[%>%s*([%w%-_]+)%]")
+      if tag_date then
+        prev_file = tag_date .. ".md"
+      else
+        local wiki_link = search_line:match("%[%[([%w%-_]+)%]%]")
+        if wiki_link then
+          prev_file = wiki_link:match("%.md$") and wiki_link or (wiki_link .. ".md")
+        end
+      end
+    end
+
+    if not prev_file then break end
+
+    local full_path = notes_dir .. "/" .. prev_file
+    if vim.fn.filereadable(full_path) == 0 then
+      local found = vim.fn.globpath(notes_dir, "**/" .. prev_file, false, true)
+      if #found > 0 then full_path = found[1] else break end
+    end
+
+    if visited[full_path] then break end
+    visited[full_path] = true
+
+    local prev_lines = vim.fn.readfile(full_path)
+    local found_idx = nil
+    for idx, l in ipairs(prev_lines) do
+      if l:match("^%s*[-*+]%s*%[[ xX>~-]%s*%]") and l:find(base_task, 1, true) then
+        found_idx = idx
+        break
+      end
+    end
+
+    if found_idx then
+      local p_line = prev_lines[found_idx]
+      local p_marker = p_line:match("^%s*[-*+]%s*%[([ xX>~-])%]") or " "
+      local p_sub = {}
+      local m = found_idx + 1
+      while m <= #prev_lines and (prev_lines[m]:match("^%s%s%s%s%S") or prev_lines[m]:match("^\t%S")) do
+        table.insert(p_sub, (prev_lines[m]:gsub("^%s+", "")))
+        m = m + 1
+      end
+
+      table.insert(chain, {
+        file = full_path,
+        name = prev_file,
+        base_name = vim.fn.fnamemodify(prev_file, ":r"),
+        marker = p_marker,
+        line_num = found_idx,
+        subnotes = p_sub,
+        raw_line = p_line
+      })
+
+      search_line = p_line
+    else
+      break
+    end
+  end
+
+  -- Invertir la cadena para orden cronológico (Origen -> Hoy)
+  local chrono = {}
+  for i = #chain, 1, -1 do
+    table.insert(chrono, chain[i])
+  end
+
+  local display_lines = {}
+  table.insert(display_lines, " Hilo Histórico: " .. base_task)
+  local dates = {}
+  for _, n in ipairs(chrono) do table.insert(dates, n.base_name) end
+  table.insert(display_lines, " Cadena: " .. table.concat(dates, " → "))
+  table.insert(display_lines, string.rep("─", 68))
+
+  local line_to_target = {}
+
+  for _, node in ipairs(chrono) do
+    local is_today = (node.base_name == os.date("%Y%m%d"))
+    local is_origin = (node.base_name == chrono[1].base_name and #chrono > 1)
+    local tag = is_today and " (Hoy)" or (is_origin and " (Origen)" or "")
+    local box = "[" .. node.marker .. "]"
+
+    local header = string.format(" ● %s%s  %s  (L:%d en %s)", node.base_name, tag, box, node.line_num, node.name)
+    table.insert(display_lines, header)
+    line_to_target[#display_lines] = { file = node.file, line_num = node.line_num }
+
+    if #node.subnotes > 0 then
+      for _, sn in ipairs(node.subnotes) do
+        table.insert(display_lines, "     ↳ " .. sn)
+        line_to_target[#display_lines] = { file = node.file, line_num = node.line_num }
+      end
+    else
+      table.insert(display_lines, "     ↳ (Sin apuntes en esta fecha)")
+      line_to_target[#display_lines] = { file = node.file, line_num = node.line_num }
+    end
+    table.insert(display_lines, "")
+  end
+
+  table.insert(display_lines, string.rep("─", 68))
+  table.insert(display_lines, " [Enter]: Saltar a fecha seleccionada | [q/Esc]: Cerrar")
+
+  -- Crear buffer flotante
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
+  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
+
+  local width = math.min(math.floor(vim.o.columns * 0.9), 92)
+  local height = math.min(#display_lines + 2, math.floor(vim.o.lines * 0.85))
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+    title = " Historial de Tarea (:TodoHistory) ",
+    title_pos = "center",
+  })
+
+  local close_fn = function()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+  end
+
+  vim.keymap.set("n", "q", close_fn, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<Esc>", close_fn, { buffer = buf, nowait = true })
+
+  -- Saltar a la fecha / archivo al pulsar Enter
+  vim.keymap.set("n", "<CR>", function()
+    local cur_l = vim.fn.line(".")
+    local target = line_to_target[cur_l]
+    close_fn()
+    if target and vim.fn.filereadable(target.file) == 1 then
+      vim.cmd("normal! m'")
+      vim.cmd("edit " .. vim.fn.fnameescape(target.file))
+      if target.line_num then
+        vim.api.nvim_win_set_cursor(0, { target.line_num, 0 })
+        vim.cmd("normal! zz")
+      end
+    end
+  end, { buffer = buf, nowait = true })
 end
 
 -- Configurar búsqueda de notas para salto con comando 'gf' nativo de Vim y colores de prioridades
